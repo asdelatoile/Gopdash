@@ -1,0 +1,22 @@
+services:
+  gopdash:
+    build: .
+    container_name: gopdash
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      # Configuration éclatée (hot-reload ; layout.yaml a besoin du read-write)
+      - ./config:/data/config
+      # Custom local icons (served at /icons/...)
+      - ./icons:/app/static/icons:ro
+      # Docker socket (read-only for security)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - CONFIG_DIR=/data/config
+      - STATIC_DIR=/app/static
+      - RUST_LOG=gopdash=info
+    # Required for sysinfo to read host metrics
+    pid: host
+    security_opt:
+      - no-new-privileges:true

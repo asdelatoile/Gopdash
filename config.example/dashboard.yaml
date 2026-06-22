@@ -1,0 +1,67 @@
+# Définition des widgets du dashboard (édité à la main).
+# Les positions (x/y/w/h) sont gérées dans config/layout.yaml.
+#
+# icon : lucide:<nom> | sh:<nom> (selfh.st) | /icons/<fichier> | https://...
+# show_header: false  # masque le titre et l'icône (défaut : true)
+widgets:
+  - type: system
+    id: system-1
+    title: Serveur
+    icon: lucide:server
+
+  - type: weather
+    id: weather-1
+    title: Météo
+    icon: lucide:cloud-sun
+    # location: Lyon,FR      # optionnel — défaut = services.yaml → weather.default_location
+    # show_forecast: false # optionnel — défaut = services.yaml → weather.show_forecast
+
+  - type: calendar
+    id: calendar-1
+    title: Calendrier
+    icon: lucide:calendar
+    # show_today: true          # jour + heure au-dessus de la grille (défaut : true)
+    # show_outside_days: false  # jours des mois adjacentes (défaut : false)
+    # show_navigation: false    # flèches mois précédent / suivant (défaut : false)
+
+  - type: search
+    id: search-1
+    title: Google
+    icon: lucide:search
+    engine: google       # id dans services.yaml → search_engines
+    target: new-tab      # new-tab | same-tab
+
+  - type: docker
+    id: docker-1
+    title: Containers
+    icon: lucide:container
+    show_all: true
+    # group_by: flat | compose ; collapse_groups replie les stacks Compose
+    group_by: compose
+    collapse_groups: true
+
+  - type: bookmarks
+    id: bookmarks-infra
+    title: Infrastructure
+    icon: lucide:network
+    group: Infrastructure
+
+  - type: bookmarks
+    id: bookmarks-media
+    title: Media
+    icon: sh:jellyfin
+    group: Media
+
+  - type: rss
+    id: rss-tech
+    title: Hacker News
+    icon: lucide:newspaper
+    feed: tech
+    max_items: 8
+
+  - type: rss
+    id: rss-selfhosted
+    title: r/selfhosted
+    icon: lucide:rss
+    feed: selfhosted
+    max_items: 8

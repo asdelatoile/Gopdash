@@ -1,0 +1,23 @@
+# Réglages globaux de l'application (édité à la main)
+title: Gopdash
+
+# Authentification par page de connexion (optionnelle)
+auth:
+  enabled: false
+  username: admin
+  password: changeme
+
+# Intervalle de rafraîchissement des métriques live (secondes)
+refresh_interval: 5
+
+# Thème : mode = light | dark | system ; preset = default | ocean | forest | rose
+theme:
+  mode: system
+  preset: default
+
+settings:
+  # true : les déplacements de widgets sont écrits dans config/layout.yaml
+  persist_layout: true
+  # BCP 47 (fr-FR, en-US…) et fuseau IANA (Europe/Paris, America/New_York…)
+  locale: fr-FR
+  timezone: Europe/Paris

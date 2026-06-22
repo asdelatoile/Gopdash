@@ -1,0 +1,74 @@
+# Sources de données alimentant les widgets (édité à la main).
+
+weather:
+  default_location: Paris,FR  # utilisé si le widget météo n'a pas de location
+  units: metric
+  show_forecast: true           # prévisions sur 5 jours (surcharge possible par widget)
+
+docker:
+  socket_path: /var/run/docker.sock
+  # Conteneurs *arr connus : affiche un badge et un lien dédié
+  arr_containers:
+    - name: Radarr
+      container_name: radarr
+      kind: radarr
+      url: https://radarr.example.com
+    - name: Sonarr
+      container_name: sonarr
+      kind: sonarr
+      url: https://sonarr.example.com
+    - name: Prowlarr
+      container_name: prowlarr
+      kind: prowlarr
+      url: https://prowlarr.example.com
+    - name: Jellyfin
+      container_name: jellyfin
+      kind: jellyfin
+      url: https://jellyfin.example.com
+
+bookmarks:
+  - name: Infrastructure
+    links:
+      - name: Proxmox
+        url: https://proxmox.local
+        icon: sh:proxmox
+        description: Hyperviseur
+      - name: Portainer
+        url: https://portainer.local
+        icon: sh:portainer
+        description: Docker UI
+  - name: Media
+    links:
+      - name: Jellyfin
+        url: https://jellyfin.local
+        icon: sh:jellyfin
+        description: Streaming
+      - name: qBittorrent
+        url: https://qbittorrent.local
+        description: Torrents
+
+rss:
+  - name: tech
+    url: https://hnrss.org/frontpage
+    refresh_minutes: 15
+  - name: selfhosted
+    url: https://hnrss.org/newest?q=selfhosted
+    refresh_minutes: 30
+
+search_engines:
+  - id: google
+    name: Google
+    url: https://www.google.com/search?q={query}
+    icon: sh:google
+  - id: duckduckgo
+    name: DuckDuckGo
+    url: https://duckduckgo.com/?q={query}
+  - id: bing
+    name: Bing
+    url: https://www.bing.com/search?q={query}
+  - id: qwant
+    name: Qwant
+    url: https://www.qwant.com/?q={query}
+  - id: brave
+    name: Brave
+    url: https://search.brave.com/search?q={query}

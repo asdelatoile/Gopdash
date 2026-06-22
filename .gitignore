@@ -1,0 +1,25 @@
+# Rust
+backend/target/
+**/*.rs.bk
+
+# Node
+node_modules/
+frontend/build/
+frontend/.svelte-kit/
+
+# Config legacy (fichier unique à la racine, déconseillé)
+config.yaml
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json
+*.swp
+
+# Env
+.env
+.env.*
+
+# Docker
+*.log

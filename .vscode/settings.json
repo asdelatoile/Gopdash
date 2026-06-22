@@ -1,0 +1,6 @@
+{
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"svelte.enable-ts-plugin": true,
+	"eslint.workingDirectories": ["frontend"]
+}
