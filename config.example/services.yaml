@@ -7,24 +7,6 @@ weather:
 
 docker:
   socket_path: /var/run/docker.sock
-  # Conteneurs *arr connus : affiche un badge et un lien dédié
-  arr_containers:
-    - name: Radarr
-      container_name: radarr
-      kind: radarr
-      url: https://radarr.example.com
-    - name: Sonarr
-      container_name: sonarr
-      kind: sonarr
-      url: https://sonarr.example.com
-    - name: Prowlarr
-      container_name: prowlarr
-      kind: prowlarr
-      url: https://prowlarr.example.com
-    - name: Jellyfin
-      container_name: jellyfin
-      kind: jellyfin
-      url: https://jellyfin.example.com
 
 bookmarks:
   - name: Infrastructure

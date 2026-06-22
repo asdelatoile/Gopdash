@@ -90,9 +90,6 @@ export interface ContainerInfo {
 	memory_usage: number;
 	memory_limit: number;
 	memory_percent: number;
-	is_arr: boolean;
-	arr_kind: string | null;
-	arr_url: string | null;
 	compose_project: string | null;
 	compose_service: string | null;
 }

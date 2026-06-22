@@ -49,12 +49,6 @@ async fn main() -> anyhow::Result<()> {
 
     let state = Arc::new(AppState::new(config_source).await?);
 
-    // Initialize docker arr map from config
-    {
-        let cfg = state.config.get().await;
-        state.docker.update_arr_map(&cfg.docker).await;
-    }
-
     // Start background tasks
     state.docker.clone().spawn_stats_collector();
     let watch_target = state.config.source().watch_target();
@@ -131,8 +125,6 @@ fn spawn_config_watcher(state: Arc<AppState>, path: PathBuf) {
                     if let Err(e) = state.config.reload().await {
                         tracing::error!("Config reload failed: {e}");
                     } else {
-                        let cfg = state.config.get().await;
-                        state.docker.update_arr_map(&cfg.docker).await;
                         let _ = state.config_tx.send(());
                     }
                 }

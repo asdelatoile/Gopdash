@@ -95,8 +95,6 @@ Gopdash/
 | `calendar` | Calendrier mensuel + horloge (locale / fuseau) | `type: calendar` + `show_today`, `show_outside_days`, `show_navigation` |
 | `search` | Recherche web multi-moteurs | `type: search` + `engine`, `target` |
 
-Les containers *arr (Radarr, Sonarr, Jellyfin…) sont détectés via `docker.arr_containers` et affichés avec un badge spécial.
-
 ### Locale et fuseau horaire
 
 Dans `config/app.yaml`, sous `settings` :
@@ -232,6 +230,10 @@ make docker         # Container Docker optimisé
 ```
 
 Le Dockerfile produit une image ~50-80 MB (Debian slim + binaire Rust strip + assets statiques gzip).
+
+À l'exécution, la consommation reste très faible (ex. ~6 Mo RAM, CPU quasi nul au repos) :
+
+![Consommation CPU / RAM du container Gopdash](docs/docker-metrics.png)
 
 ## Développement
 

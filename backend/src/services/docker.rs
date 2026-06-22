@@ -1,4 +1,3 @@
-use crate::config::{ArrKind, DockerConfig};
 use crate::error::{AppError, AppResult};
 use bollard::container::{
     ListContainersOptions, MemoryStats, RestartContainerOptions, StartContainerOptions,
@@ -25,16 +24,12 @@ pub struct ContainerInfo {
     pub memory_usage: u64,
     pub memory_limit: u64,
     pub memory_percent: f64,
-    pub is_arr: bool,
-    pub arr_kind: Option<String>,
-    pub arr_url: Option<String>,
     pub compose_project: Option<String>,
     pub compose_service: Option<String>,
 }
 
 pub struct DockerService {
     docker: Option<Docker>,
-    arr_map: Arc<RwLock<HashMap<String, (ArrKind, Option<String>)>>>,
     stats_cache: Arc<RwLock<HashMap<String, ContainerStats>>>,
 }
 
@@ -69,7 +64,6 @@ impl DockerService {
 
         Ok(Self {
             docker,
-            arr_map: Arc::new(RwLock::new(HashMap::new())),
             stats_cache: Arc::new(RwLock::new(HashMap::new())),
         })
     }
@@ -78,17 +72,6 @@ impl DockerService {
         self.docker
             .as_ref()
             .ok_or_else(|| AppError::Docker("Docker socket unavailable".into()))
-    }
-
-    pub async fn update_arr_map(&self, config: &DockerConfig) {
-        let mut map = self.arr_map.write().await;
-        map.clear();
-        for arr in &config.arr_containers {
-            map.insert(
-                arr.container_name.clone(),
-                (arr.kind.clone(), arr.url.clone()),
-            );
-        }
     }
 
     pub async fn list_containers(
@@ -108,7 +91,6 @@ impl DockerService {
             .map_err(|e| AppError::Docker(e.to_string()))?;
 
         let stats = self.stats_cache.read().await;
-        let arr_map = self.arr_map.read().await;
 
         let mut result: Vec<ContainerInfo> = containers
             .into_iter()
@@ -126,7 +108,6 @@ impl DockerService {
                     compose_project,
                     compose_service,
                     stats.get(&name),
-                    &arr_map,
                 ))
             })
             .collect();
@@ -142,11 +123,7 @@ impl DockerService {
         compose_project: Option<String>,
         compose_service: Option<String>,
         stats: Option<&ContainerStats>,
-        arr_map: &HashMap<String, (ArrKind, Option<String>)>,
     ) -> ContainerInfo {
-        let (arr_kind, arr_url) = arr_map.get(name).cloned().unwrap_or((ArrKind::Other, None));
-        let is_arr = !matches!(arr_kind, ArrKind::Other);
-
         let state = c.state.clone().unwrap_or_else(|| "unknown".into());
         let status = c.status.clone().unwrap_or_else(|| "unknown".into());
 
@@ -193,13 +170,6 @@ impl DockerService {
             memory_usage: mem_usage,
             memory_limit: mem_limit,
             memory_percent: mem_percent,
-            is_arr,
-            arr_kind: if is_arr {
-                Some(format!("{arr_kind:?}").trim_matches('"').to_lowercase())
-            } else {
-                None
-            },
-            arr_url,
             compose_project,
             compose_service,
         }

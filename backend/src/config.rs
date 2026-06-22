@@ -417,42 +417,18 @@ fn default_rss_refresh() -> u64 {
 pub struct DockerConfig {
     #[serde(default = "default_docker_socket")]
     pub socket_path: String,
-    #[serde(default)]
-    pub arr_containers: Vec<ArrContainer>,
 }
 
 impl Default for DockerConfig {
     fn default() -> Self {
         Self {
             socket_path: default_docker_socket(),
-            arr_containers: vec![],
         }
     }
 }
 
 fn default_docker_socket() -> String {
     "/var/run/docker.sock".into()
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct ArrContainer {
-    pub name: String,
-    pub container_name: String,
-    pub kind: ArrKind,
-    pub url: Option<String>,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(rename_all = "lowercase")]
-pub enum ArrKind {
-    Radarr,
-    Sonarr,
-    Prowlarr,
-    Lidarr,
-    Readarr,
-    Bazarr,
-    Jellyfin,
-    Other,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]

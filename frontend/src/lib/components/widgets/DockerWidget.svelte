@@ -240,11 +240,6 @@
 			<div class="flex items-center gap-2 min-w-0">
 				<span class="w-2 h-2 rounded-full shrink-0 {stateColor(container.state)}"></span>
 				<span class="font-medium truncate">{containerDisplayName(container)}</span>
-				{#if container.is_arr && container.arr_kind}
-					<span class="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] uppercase">
-						{container.arr_kind}
-					</span>
-				{/if}
 			</div>
 			{@render containerActions(container)}
 		</div>
