@@ -89,7 +89,7 @@ Gopdash/
 |--------|-------------|-------------|
 | `system` | CPU, RAM, disques, températures | `type: system` |
 | `docker` | Containers + actions start/stop/restart | `type: docker` |
-| `docker-updates` | Mises à jour d'images Docker (pull + recréation) | `type: docker-updates` |
+| `docker-updates` | Mises à jour d'images Docker (pull + recréation + prune) | `type: docker-updates` |
 | `weather` | OpenWeatherMap current + 5 jours | `type: weather` |
 | `bookmarks` | Groupes de liens favoris (+ health check optionnel) | `type: bookmarks` + `columns` (défaut 3) |
 | `rss` | Flux RSS récents | `type: rss` |
@@ -173,6 +173,10 @@ Widget dédié pour vérifier si une nouvelle image est disponible et la déploy
 ```
 
 Pastilles : orange = mise à jour dispo. Seuls les containers avec une mise à jour disponible sont listés (à jour ou statut inconnu = masqués).
+
+Le widget propose aussi :
+- **Actualiser** — revérifier les mises à jour
+- **Prune** (icône poubelle) — supprime les images inutilisées (`docker image prune -a`), avec confirmation et résumé de l'espace libéré
 
 ## API REST
 
