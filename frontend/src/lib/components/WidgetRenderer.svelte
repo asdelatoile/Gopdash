@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { WidgetConfig } from '$lib/types';
 	import DockerWidget from './widgets/DockerWidget.svelte';
+	import DockerUpdatesWidget from './widgets/DockerUpdatesWidget.svelte';
 	import SystemWidget from './widgets/SystemWidget.svelte';
 	import WeatherWidget from './widgets/WeatherWidget.svelte';
 	import BookmarksWidget from './widgets/BookmarksWidget.svelte';
@@ -13,6 +14,8 @@
 
 {#if widget.type === 'docker'}
 	<DockerWidget {widget} />
+{:else if widget.type === 'docker-updates'}
+	<DockerUpdatesWidget {widget} />
 {:else if widget.type === 'system'}
 	<SystemWidget {widget} />
 {:else if widget.type === 'weather'}

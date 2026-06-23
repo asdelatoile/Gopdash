@@ -3,6 +3,7 @@ use bollard::container::{
     ListContainersOptions, MemoryStats, RestartContainerOptions, StartContainerOptions,
     Stats, StatsOptions, StopContainerOptions,
 };
+use bollard::image::PruneImagesOptions;
 use bollard::models::ContainerSummary;
 use bollard::Docker;
 use futures::StreamExt;
@@ -28,9 +29,16 @@ pub struct ContainerInfo {
     pub compose_service: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub struct ImagePruneResult {
+    pub images_deleted: usize,
+    pub space_reclaimed: u64,
+}
+
 pub struct DockerService {
     docker: Option<Docker>,
     stats_cache: Arc<RwLock<HashMap<String, ContainerStats>>>,
+    updates: crate::services::docker_updates::DockerUpdatesService,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -65,6 +73,42 @@ impl DockerService {
         Ok(Self {
             docker,
             stats_cache: Arc::new(RwLock::new(HashMap::new())),
+            updates: crate::services::docker_updates::DockerUpdatesService::new(),
+        })
+    }
+
+    pub async fn list_updates(
+        &self,
+        filter_names: &[String],
+        show_all: bool,
+    ) -> AppResult<Vec<crate::services::docker_updates::ContainerUpdateInfo>> {
+        let docker = self.docker()?;
+        self.updates
+            .list_updates(docker, filter_names, show_all)
+            .await
+    }
+
+    pub async fn update_container_image(&self, id: &str) -> AppResult<()> {
+        let docker = self.docker()?;
+        self.updates.update_container(docker, id).await
+    }
+
+    pub async fn prune_unused_images(&self) -> AppResult<ImagePruneResult> {
+        let docker = self.docker()?;
+        let mut filters = HashMap::new();
+        filters.insert("dangling".to_string(), vec!["false".to_string()]);
+
+        let response = docker
+            .prune_images(Some(PruneImagesOptions {
+                filters,
+                ..Default::default()
+            }))
+            .await
+            .map_err(|e| AppError::Docker(e.to_string()))?;
+
+        Ok(ImagePruneResult {
+            images_deleted: response.images_deleted.map(|v| v.len()).unwrap_or(0),
+            space_reclaimed: response.space_reclaimed.unwrap_or(0).max(0) as u64,
         })
     }
 
@@ -298,7 +342,7 @@ fn parse_stats(stats: &Stats, previous: Option<&ContainerStats>) -> ContainerSta
     }
 }
 
-fn matches_filter(name: &str, compose_project: Option<&str>, filters: &[String]) -> bool {
+pub fn matches_filter(name: &str, compose_project: Option<&str>, filters: &[String]) -> bool {
     filters.iter().any(|f| {
         name.contains(f)
             || compose_project
@@ -307,7 +351,7 @@ fn matches_filter(name: &str, compose_project: Option<&str>, filters: &[String])
     })
 }
 
-fn extract_compose_info(
+pub fn extract_compose_info(
     labels: &Option<HashMap<String, String>>,
     name: &str,
 ) -> (Option<String>, Option<String>) {

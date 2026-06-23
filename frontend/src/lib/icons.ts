@@ -5,12 +5,13 @@ export type ParsedIcon =
 	| { kind: 'image'; src: string };
 
 const SELFH_CDN = 'https://cdn.jsdelivr.net/gh/selfhst/icons';
-const LUCIDE_CDN = 'https://cdn.jsdelivr.net/npm/lucide-static@0.511.0/icons';
+const LUCIDE_CDN = 'https://cdn.jsdelivr.net/npm/lucide-static@0.575.0/icons';
 
 const DEFAULT_WIDGET_ICONS: Record<WidgetType, string> = {
 	system: 'lucide:cpu',
 	weather: 'lucide:cloud-sun',
 	docker: 'lucide:container',
+	'docker-updates': 'lucide:arrow-up-circle',
 	bookmarks: 'lucide:bookmark',
 	rss: 'lucide:rss',
 	calendar: 'lucide:calendar',

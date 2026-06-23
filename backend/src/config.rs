@@ -83,6 +83,26 @@ pub enum WidgetConfig {
         #[serde(default = "default_show_header")]
         show_header: bool,
     },
+    #[serde(rename = "docker-updates")]
+    DockerUpdates {
+        id: String,
+        title: Option<String>,
+        icon: Option<String>,
+        #[serde(default)]
+        x: i32,
+        #[serde(default)]
+        y: i32,
+        #[serde(default = "default_w")]
+        w: i32,
+        #[serde(default = "default_h")]
+        h: i32,
+        #[serde(default)]
+        containers: Vec<String>,
+        #[serde(default)]
+        show_all: bool,
+        #[serde(default = "default_show_header")]
+        show_header: bool,
+    },
     System {
         id: String,
         title: Option<String>,
@@ -332,6 +352,7 @@ impl WidgetConfig {
     pub fn id(&self) -> &str {
         match self {
             Self::Docker { id, .. }
+            | Self::DockerUpdates { id, .. }
             | Self::System { id, .. }
             | Self::Weather { id, .. }
             | Self::Bookmarks { id, .. }
@@ -344,6 +365,7 @@ impl WidgetConfig {
     pub fn set_layout(&mut self, x: i32, y: i32, w: i32, h: i32) {
         match self {
             Self::Docker { x: px, y: py, w: pw, h: ph, .. }
+            | Self::DockerUpdates { x: px, y: py, w: pw, h: ph, .. }
             | Self::System { x: px, y: py, w: pw, h: ph, .. }
             | Self::Weather { x: px, y: py, w: pw, h: ph, .. }
             | Self::Bookmarks { x: px, y: py, w: pw, h: ph, .. }
@@ -361,6 +383,7 @@ impl WidgetConfig {
     pub fn layout(&self) -> (i32, i32, i32, i32) {
         match self {
             Self::Docker { x, y, w, h, .. }
+            | Self::DockerUpdates { x, y, w, h, .. }
             | Self::System { x, y, w, h, .. }
             | Self::Weather { x, y, w, h, .. }
             | Self::Bookmarks { x, y, w, h, .. }

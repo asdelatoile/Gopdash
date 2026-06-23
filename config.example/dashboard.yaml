@@ -40,6 +40,12 @@ widgets:
     group_by: compose
     collapse_groups: true
 
+  - type: docker-updates
+    id: docker-updates-1
+    title: Updates
+    icon: lucide:arrow-up-circle
+    show_all: true
+
   - type: bookmarks
     id: bookmarks-infra
     title: Infrastructure

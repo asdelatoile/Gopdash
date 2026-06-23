@@ -64,6 +64,20 @@ export const api = {
 	restartContainer: (id: string) =>
 		request(`/docker/containers/${id}/restart`, { method: 'POST' }),
 
+	getDockerUpdates: (filter?: string, showAll?: boolean) => {
+		const params = new URLSearchParams();
+		if (filter) params.set('filter', filter);
+		if (showAll) params.set('show_all', 'true');
+		const qs = params.toString();
+		return request<import('./types').ContainerUpdateInfo[]>(`/docker/updates${qs ? `?${qs}` : ''}`);
+	},
+
+	updateContainer: (id: string) =>
+		request(`/docker/containers/${id}/update`, { method: 'POST' }),
+
+	pruneUnusedImages: () =>
+		request<import('./types').ImagePruneResult>('/docker/images/prune', { method: 'POST' }),
+
 	getSystem: () => request<import('./types').SystemMetrics>('/system'),
 
 	getWeather: (location?: string) => {

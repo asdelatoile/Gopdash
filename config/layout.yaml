@@ -19,6 +19,11 @@ layouts:
     y: 23
     w: 4
     h: 11
+  docker-updates-1:
+    x: 4
+    y: 49
+    w: 5
+    h: 12
   rss-selfhosted:
     x: 4
     y: 27

@@ -89,6 +89,7 @@ Gopdash/
 |--------|-------------|-------------|
 | `system` | CPU, RAM, disques, températures | `type: system` |
 | `docker` | Containers + actions start/stop/restart | `type: docker` |
+| `docker-updates` | Mises à jour d'images Docker (pull + recréation) | `type: docker-updates` |
 | `weather` | OpenWeatherMap current + 5 jours | `type: weather` |
 | `bookmarks` | Groupes de liens favoris (+ health check optionnel) | `type: bookmarks` + `columns` (défaut 3) |
 | `rss` | Flux RSS récents | `type: rss` |
@@ -156,6 +157,23 @@ bookmarks:
 
 Le widget `bookmarks` affiche une pastille verte/rouge et la latence. Rafraîchissement selon `refresh_interval` de `app.yaml`.
 
+### Mises à jour Docker
+
+Widget dédié pour vérifier si une nouvelle image est disponible et la déployer (pull + recréation du container) :
+
+```yaml
+- type: docker-updates
+  id: docker-updates-1
+  title: Mises à jour
+  icon: lucide:arrow-up-circle
+  containers:
+    - jellyfin
+    - radarr
+  show_all: false   # true = tous les containers
+```
+
+Pastilles : orange = mise à jour dispo. Seuls les containers avec une mise à jour disponible sont listés (à jour ou statut inconnu = masqués).
+
 ## API REST
 
 | Endpoint | Méthode | Description |
@@ -167,6 +185,9 @@ Le widget `bookmarks` affiche une pastille verte/rouge et la latence. Rafraîchi
 | `/api/docker/containers/{id}/start` | POST | Démarrer |
 | `/api/docker/containers/{id}/stop` | POST | Arrêter |
 | `/api/docker/containers/{id}/restart` | POST | Redémarrer |
+| `/api/docker/updates` | GET | Vérifier les mises à jour d'images |
+| `/api/docker/containers/{id}/update` | POST | Pull + recréer le container |
+| `/api/docker/images/prune` | POST | Supprimer les images inutilisées (`docker image prune -a`) |
 | `/api/system` | GET | Métriques système |
 | `/api/weather` | GET | Météo |
 | `/api/bookmarks` | GET | Liens favoris |

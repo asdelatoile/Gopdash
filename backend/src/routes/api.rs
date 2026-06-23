@@ -22,6 +22,9 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/docker/containers/{id}/start", post(start_container))
         .route("/docker/containers/{id}/stop", post(stop_container))
         .route("/docker/containers/{id}/restart", post(restart_container))
+        .route("/docker/updates", get(list_docker_updates))
+        .route("/docker/containers/{id}/update", post(update_container_image))
+        .route("/docker/images/prune", post(prune_unused_images))
         .route("/system", get(system_metrics))
         .route("/weather", get(weather))
         .route("/bookmarks", get(bookmarks))
@@ -194,6 +197,45 @@ async fn restart_container(
 ) -> AppResult<Json<serde_json::Value>> {
     state.docker.restart_container(&id).await?;
     Ok(Json(serde_json::json!({ "status": "restarted" })))
+}
+
+async fn list_docker_updates(
+    State(state): State<Arc<AppState>>,
+    Query(q): Query<ContainerQuery>,
+) -> AppResult<Json<Vec<crate::services::docker_updates::ContainerUpdateInfo>>> {
+    let config = state.config.get().await;
+    let filter_names: Vec<String> = q
+        .filter
+        .map(|f| f.split(',').map(|s| s.trim().to_string()).collect())
+        .unwrap_or_default();
+
+    let show_all = q.show_all.unwrap_or_else(|| {
+        config.widgets.iter().any(|w| {
+            matches!(
+                w,
+                WidgetConfig::Docker { show_all: true, .. }
+                    | WidgetConfig::DockerUpdates { show_all: true, .. }
+            )
+        })
+    });
+
+    let updates = state.docker.list_updates(&filter_names, show_all).await?;
+    Ok(Json(updates))
+}
+
+async fn update_container_image(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<String>,
+) -> AppResult<Json<serde_json::Value>> {
+    state.docker.update_container_image(&id).await?;
+    Ok(Json(serde_json::json!({ "status": "updated" })))
+}
+
+async fn prune_unused_images(
+    State(state): State<Arc<AppState>>,
+) -> AppResult<Json<crate::services::docker::ImagePruneResult>> {
+    let result = state.docker.prune_unused_images().await?;
+    Ok(Json(result))
 }
 
 async fn system_metrics(

@@ -1,4 +1,4 @@
-export type WidgetType = 'docker' | 'system' | 'weather' | 'bookmarks' | 'rss' | 'calendar' | 'search';
+export type WidgetType = 'docker' | 'docker-updates' | 'system' | 'weather' | 'bookmarks' | 'rss' | 'calendar' | 'search';
 export type DockerGroupBy = 'flat' | 'compose';
 export type SearchTarget = 'new-tab' | 'same-tab';
 
@@ -22,6 +22,11 @@ export type WidgetConfig =
 			show_all?: boolean;
 			group_by?: DockerGroupBy;
 			collapse_groups?: boolean;
+	  })
+	| (BaseWidget & {
+			type: 'docker-updates';
+			containers?: string[];
+			show_all?: boolean;
 	  })
 	| (BaseWidget & { type: 'weather'; location?: string; units?: string; show_forecast?: boolean })
 	| (BaseWidget & { type: 'bookmarks'; group?: string; /** Nombre de colonnes (défaut : 3) */ columns?: number })
@@ -92,6 +97,26 @@ export interface ContainerInfo {
 	memory_percent: number;
 	compose_project: string | null;
 	compose_service: string | null;
+}
+
+export type ContainerUpdateStatus = 'up_to_date' | 'available' | 'unknown';
+
+export interface ContainerUpdateInfo {
+	id: string;
+	name: string;
+	image: string;
+	state: string;
+	compose_project: string | null;
+	compose_service: string | null;
+	current_digest: string | null;
+	remote_digest: string | null;
+	status: ContainerUpdateStatus;
+	error: string | null;
+}
+
+export interface ImagePruneResult {
+	images_deleted: number;
+	space_reclaimed: number;
 }
 
 export interface SystemMetrics {
