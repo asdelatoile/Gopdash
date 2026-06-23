@@ -2,7 +2,6 @@
 # Les positions (x/y/w/h) sont gérées dans config/layout.yaml.
 #
 # icon : lucide:<nom> | sh:<nom> (selfh.st) | /icons/<fichier> | https://...
-# show_header: false  # masque le titre et l'icône (défaut : true)
 widgets:
   - type: system
     id: system-1
@@ -13,37 +12,50 @@ widgets:
     id: weather-1
     title: Météo
     icon: lucide:cloud-sun
-    # location: Lyon,FR      # optionnel — défaut = services.yaml → weather.default_location
-    # show_forecast: false # optionnel — défaut = services.yaml → weather.show_forecast
+    # location: Lyon,FR   # optionnel — défaut = services.yaml → weather.default_location
+
+  # - type: weather
+  #   id: weather-2
+  #   title: Météo
+  #   icon: lucide:cloud-sun
+  #   location: Lyon,FR   # optionnel — défaut = services.yaml → weather.default_location
+  #   show_forecast: false
 
   - type: calendar
     id: calendar-1
     title: Calendrier
     icon: lucide:calendar
-    # show_today: true          # jour + heure au-dessus de la grille (défaut : true)
-    # show_outside_days: false  # jours des mois adjacentes (défaut : false)
-    # show_navigation: false    # flèches mois précédent / suivant (défaut : false)
+    show_header: false
+    show_today: false
+    show_outside_days: true
+    show_navigation: true
 
   - type: search
     id: search-1
-    title: Google
+    title: Recherche
     icon: lucide:search
-    engine: google       # id dans services.yaml → search_engines
-    target: new-tab      # new-tab | same-tab
+    engine: duckduckgo   # id dans services.yaml → search_engines
+    target: same-tab      # new-tab | same-tab
 
   - type: docker
     id: docker-1
     title: Containers
     icon: lucide:container
-    show_all: true
+    containers:
+      - gopdash
+      - webserver
+    show_all: false
     # group_by: flat | compose ; collapse_groups replie les stacks Compose
     group_by: compose
     collapse_groups: true
 
   - type: docker-updates
     id: docker-updates-1
-    title: Updates
-    icon: lucide:arrow-up-circle
+    title: Mises à jour
+    icon: lucide:toolbox
+    # containers:
+    #   - gopdash
+    #   - webserver
     show_all: true
 
   - type: docker-stack
@@ -52,22 +64,16 @@ widgets:
     icon: lucide:layers
     stacks:
       - name: Webserver
-        targets: [webserver]
+        targets: [webserver]   # projet Compose
       - name: Mail
-        targets: [mailpit]
-
-  - type: bookmarks
-    id: bookmarks-infra
-    title: Infrastructure
-    icon: lucide:network
-    group: Infrastructure
+        targets: [mailpit,mysql]     # container ou compose
 
   - type: bookmarks
     id: bookmarks-media
     title: Media
-    icon: sh:jellyfin
+    icon: lucide:video
     group: Media
-    # columns: 3   # nombre de colonnes (défaut : 3)
+    columns: 2   # défaut : 3
 
   - type: jellyfin
     id: jellyfin-1
@@ -76,6 +82,13 @@ widgets:
     show_now_playing: true
     show_library_counts: true
     max_sessions: 3
+
+  - type: bookmarks
+    id: bookmarks-infra
+    title: Infrastructure
+    icon: lucide:network
+    group: Infrastructure
+    columns: 2
 
   - type: rss
     id: rss-tech
@@ -86,7 +99,8 @@ widgets:
 
   - type: rss
     id: rss-selfhosted
-    title: r/selfhosted
+    title: Self-hosted
     icon: lucide:rss
     feed: selfhosted
     max_items: 8
+    show_header: false
