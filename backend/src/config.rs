@@ -35,6 +35,9 @@ pub struct AppConfig {
     pub search_engines: Vec<SearchEngineConfig>,
 
     #[serde(default)]
+    pub jellyfin: Option<JellyfinConfig>,
+
+    #[serde(default)]
     pub theme: ThemeConfig,
 
     #[serde(default)]
@@ -102,6 +105,25 @@ pub enum WidgetConfig {
         show_all: bool,
         #[serde(default = "default_show_header")]
         show_header: bool,
+    },
+    #[serde(rename = "docker-stack")]
+    DockerStack {
+        id: String,
+        title: Option<String>,
+        icon: Option<String>,
+        #[serde(default)]
+        x: i32,
+        #[serde(default)]
+        y: i32,
+        #[serde(default = "default_w")]
+        w: i32,
+        #[serde(default = "default_h")]
+        h: i32,
+        #[serde(default = "default_show_header")]
+        show_header: bool,
+        /// Groupes de containers / stacks Compose à contrôler ensemble
+        #[serde(default)]
+        stacks: Vec<DockerStackGroup>,
     },
     System {
         id: String,
@@ -216,6 +238,27 @@ pub enum WidgetConfig {
         #[serde(default)]
         target: SearchTarget,
     },
+    Jellyfin {
+        id: String,
+        title: Option<String>,
+        icon: Option<String>,
+        #[serde(default)]
+        x: i32,
+        #[serde(default)]
+        y: i32,
+        #[serde(default = "default_w")]
+        w: i32,
+        #[serde(default = "default_h")]
+        h: i32,
+        #[serde(default = "default_show_header")]
+        show_header: bool,
+        #[serde(default = "default_show_now_playing")]
+        show_now_playing: bool,
+        #[serde(default = "default_show_library_counts")]
+        show_library_counts: bool,
+        #[serde(default = "default_max_sessions")]
+        max_sessions: u32,
+    },
 }
 
 fn default_w() -> i32 {
@@ -241,6 +284,18 @@ pub enum DockerGroupBy {
 }
 fn default_show_forecast() -> bool {
     true
+}
+
+fn default_show_now_playing() -> bool {
+    true
+}
+
+fn default_show_library_counts() -> bool {
+    true
+}
+
+fn default_max_sessions() -> u32 {
+    3
 }
 
 fn default_show_header() -> bool {
@@ -353,12 +408,14 @@ impl WidgetConfig {
         match self {
             Self::Docker { id, .. }
             | Self::DockerUpdates { id, .. }
+            | Self::DockerStack { id, .. }
             | Self::System { id, .. }
             | Self::Weather { id, .. }
             | Self::Bookmarks { id, .. }
             | Self::Rss { id, .. }
             | Self::Calendar { id, .. }
-            | Self::Search { id, .. } => id,
+            | Self::Search { id, .. }
+            | Self::Jellyfin { id, .. } => id,
         }
     }
 
@@ -366,12 +423,14 @@ impl WidgetConfig {
         match self {
             Self::Docker { x: px, y: py, w: pw, h: ph, .. }
             | Self::DockerUpdates { x: px, y: py, w: pw, h: ph, .. }
+            | Self::DockerStack { x: px, y: py, w: pw, h: ph, .. }
             | Self::System { x: px, y: py, w: pw, h: ph, .. }
             | Self::Weather { x: px, y: py, w: pw, h: ph, .. }
             | Self::Bookmarks { x: px, y: py, w: pw, h: ph, .. }
             | Self::Rss { x: px, y: py, w: pw, h: ph, .. }
             | Self::Calendar { x: px, y: py, w: pw, h: ph, .. }
-            | Self::Search { x: px, y: py, w: pw, h: ph, .. } => {
+            | Self::Search { x: px, y: py, w: pw, h: ph, .. }
+            | Self::Jellyfin { x: px, y: py, w: pw, h: ph, .. } => {
                 *px = x;
                 *py = y;
                 *pw = w;
@@ -384,14 +443,24 @@ impl WidgetConfig {
         match self {
             Self::Docker { x, y, w, h, .. }
             | Self::DockerUpdates { x, y, w, h, .. }
+            | Self::DockerStack { x, y, w, h, .. }
             | Self::System { x, y, w, h, .. }
             | Self::Weather { x, y, w, h, .. }
             | Self::Bookmarks { x, y, w, h, .. }
             | Self::Rss { x, y, w, h, .. }
             | Self::Calendar { x, y, w, h, .. }
-            | Self::Search { x, y, w, h, .. } => (*x, *y, *w, *h),
+            | Self::Search { x, y, w, h, .. }
+            | Self::Jellyfin { x, y, w, h, .. } => (*x, *y, *w, *h),
         }
     }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct JellyfinConfig {
+    pub url: String,
+    pub api_key: String,
+    #[serde(default)]
+    pub insecure: bool,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -405,6 +474,13 @@ pub struct WeatherConfig {
 
 fn default_units() -> String {
     "metric".into()
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct DockerStackGroup {
+    pub name: String,
+    /// Noms de containers ou projets Compose (filtre partiel, comme le widget docker)
+    pub targets: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -525,6 +601,8 @@ struct ServicesFile {
     docker: DockerConfig,
     #[serde(default)]
     search_engines: Vec<SearchEngineConfig>,
+    #[serde(default)]
+    jellyfin: Option<JellyfinConfig>,
 }
 
 /// `config/layout.yaml` — positions Gridstack, écrit par le backend.
@@ -568,6 +646,7 @@ fn merge_files(
         rss: services.rss,
         docker: services.docker,
         search_engines: services.search_engines,
+        jellyfin: services.jellyfin,
         theme: app.theme,
         settings: app.settings,
     }

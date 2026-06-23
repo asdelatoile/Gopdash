@@ -12,10 +12,12 @@ const DEFAULT_WIDGET_ICONS: Record<WidgetType, string> = {
 	weather: 'lucide:cloud-sun',
 	docker: 'lucide:container',
 	'docker-updates': 'lucide:arrow-up-circle',
+	'docker-stack': 'lucide:layers',
 	bookmarks: 'lucide:bookmark',
 	rss: 'lucide:rss',
 	calendar: 'lucide:calendar',
-	search: 'lucide:search'
+	search: 'lucide:search',
+	jellyfin: 'sh:jellyfin'
 };
 
 export function defaultWidgetIcon(type: WidgetType): string {

@@ -22,10 +22,10 @@ Dashboard self-hosted ultra-léger. Un seul container Docker, drag & drop de wid
 ## Démarrage rapide
 
 ```bash
-# 1. Initialiser (copie config.example/ vers config/)
+# 1. Initialiser (copie config.example/ vers config/ — dossier local, non versionné)
 make init
 
-# 2. Éditer la configuration
+# 2. Éditer la configuration (config/ est dans .gitignore : clés API, mots de passe, etc.)
 # config/app.yaml        → titre, auth, thème, settings
 # config/dashboard.yaml  → widgets affichés
 # config/services.yaml   → weather, docker, bookmarks, rss, search_engines
@@ -90,11 +90,13 @@ Gopdash/
 | `system` | CPU, RAM, disques, températures | `type: system` |
 | `docker` | Containers + actions start/stop/restart | `type: docker` |
 | `docker-updates` | Mises à jour d'images Docker (pull + recréation + prune) | `type: docker-updates` |
+| `docker-stack` | Contrôle groupé start/stop/restart de stacks | `type: docker-stack` + `stacks` |
 | `weather` | OpenWeatherMap current + 5 jours | `type: weather` |
 | `bookmarks` | Groupes de liens favoris (+ health check optionnel) | `type: bookmarks` + `columns` (défaut 3) |
 | `rss` | Flux RSS récents | `type: rss` |
 | `calendar` | Calendrier mensuel + horloge (locale / fuseau) | `type: calendar` + `show_today`, `show_outside_days`, `show_navigation` |
 | `search` | Recherche web multi-moteurs | `type: search` + `engine`, `target` |
+| `jellyfin` | Now Playing + compteurs bibliothèque | `type: jellyfin` + config dans `services.yaml` |
 
 ### Locale et fuseau horaire
 
@@ -177,6 +179,49 @@ Pastilles : orange = mise à jour dispo. Seuls les containers avec une mise à j
 Le widget propose aussi :
 - **Actualiser** — revérifier les mises à jour
 - **Prune** (icône poubelle) — supprime les images inutilisées (`docker image prune -a`), avec confirmation et résumé de l'espace libéré
+
+### Stacks Docker (contrôle groupé)
+
+Démarre, arrête ou redémarre plusieurs containers ou stacks Compose d'un coup :
+
+```yaml
+- type: docker-stack
+  id: docker-stack-1
+  title: Stacks
+  icon: lucide:layers
+  stacks:
+    - name: Webserver
+      targets: [webserver]     # nom du projet Compose
+    - name: Mail
+      targets: [mailpit]       # nom de container (filtre partiel)
+```
+
+Chaque ligne affiche **x/x actifs**, une pastille d'état et un tooltip listant les containers. Réutilise les API Docker existantes (start/stop/restart).
+
+### Widget Jellyfin
+
+Configuration serveur dans `config/services.yaml` (clé API : Jellyfin → Dashboard → API Keys) :
+
+```yaml
+jellyfin:
+  url: https://jellyfin.local
+  api_key: "your-api-key"
+  # insecure: true   # certificats auto-signés
+```
+
+Widget dans `config/dashboard.yaml` :
+
+```yaml
+- type: jellyfin
+  id: jellyfin-1
+  title: Jellyfin
+  icon: sh:jellyfin
+  show_now_playing: true      # sessions en lecture (défaut : true)
+  show_library_counts: true   # films / séries / épisodes (défaut : true)
+  max_sessions: 3             # nombre max de lectures affichées
+```
+
+Le backend proxy les appels Jellyfin (`/Sessions`, `/Items/Counts`) et les posters. Rafraîchissement selon `refresh_interval` de `app.yaml`.
 
 ## API REST
 

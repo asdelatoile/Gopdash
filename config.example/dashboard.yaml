@@ -46,6 +46,16 @@ widgets:
     icon: lucide:arrow-up-circle
     show_all: true
 
+  - type: docker-stack
+    id: docker-stack-1
+    title: Stacks
+    icon: lucide:layers
+    stacks:
+      - name: Webserver
+        targets: [webserver]
+      - name: Mail
+        targets: [mailpit]
+
   - type: bookmarks
     id: bookmarks-infra
     title: Infrastructure
@@ -58,6 +68,14 @@ widgets:
     icon: sh:jellyfin
     group: Media
     # columns: 3   # nombre de colonnes (défaut : 3)
+
+  - type: jellyfin
+    id: jellyfin-1
+    title: Jellyfin
+    icon: sh:jellyfin
+    show_now_playing: true
+    show_library_counts: true
+    max_sessions: 3
 
   - type: rss
     id: rss-tech

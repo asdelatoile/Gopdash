@@ -80,3 +80,40 @@ export function aggregateMemory(containers: ContainerInfo[]): number {
 export function groupHasRunning(containers: ContainerInfo[]): boolean {
 	return runningContainers(containers).length > 0;
 }
+
+export function containersMatchingTargets(
+	containers: ContainerInfo[],
+	targets: string[]
+): ContainerInfo[] {
+	if (targets.length === 0) return [];
+
+	const seen = new Set<string>();
+	const result: ContainerInfo[] = [];
+
+	for (const container of containers) {
+		const matches = targets.some(
+			(target) =>
+				container.name.includes(target) ||
+				container.compose_project === target ||
+				(container.compose_project?.includes(target) ?? false)
+		);
+		if (matches && !seen.has(container.id)) {
+			seen.add(container.id);
+			result.push(container);
+		}
+	}
+
+	return result.sort((a, b) =>
+		(a.compose_service ?? a.name).localeCompare(b.compose_service ?? b.name)
+	);
+}
+
+export function runningCount(containers: ContainerInfo[]): number {
+	return runningContainers(containers).length;
+}
+
+export function containerTooltip(containers: ContainerInfo[]): string {
+	return containers
+		.map((c) => `${containerDisplayName(c)} (${c.state})`)
+		.join('\n');
+}

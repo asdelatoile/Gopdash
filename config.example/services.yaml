@@ -22,17 +22,27 @@ bookmarks:
   - name: Media
     links:
       - name: Jellyfin
-        url: https://jellyfin.local
+        url: https://xxx.xxx.com
         icon: sh:jellyfin
         description: Streaming
         health_check: true
+      - name: Radarr
+        url: https://xxx.xxx.com
+        icon: sh:radarr
+        health_check: true
+      - name: Sonarr
+        url: https://xxx.xxx.com
+        icon: sh:sonarr
+        health_check: true
+      - name: Jackett
+        url: https://jackett.local:9117/
+        icon: sh:jackett
+        health_check: true
+        health_url: https://jackett.local:9117/UI/Login
+        expected_status: 302
       - name: qBittorrent
         url: https://qbittorrent.local
         description: Torrents
-        # health_check: true              # active la pastille up/down
-        # health_url: https://...           # URL à sonder (défaut : url)
-        # expected_status: 302              # sinon 2xx = OK
-        # insecure: true                    # certificats auto-signés
 
 rss:
   - name: tech
@@ -42,7 +52,12 @@ rss:
     url: https://hnrss.org/newest?q=selfhosted
     refresh_minutes: 30
 
-# Moteurs de recherche pour le widget search ({query} = terme encodé)
+# API Jellyfin pour le widget jellyfin (clé : Dashboard → API Keys)
+jellyfin:
+  url: https://flix.local
+  api_key: "******"   # à renseigner
+  # insecure: true   # certificats auto-signés
+
 search_engines:
   - id: google
     name: Google

@@ -1,5 +1,7 @@
 use axum::{
     extract::{Path, Query, State},
+    http::{header, StatusCode},
+    response::{IntoResponse, Response},
     routing::{get, post, put},
     Json, Router,
 };
@@ -30,6 +32,8 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/bookmarks", get(bookmarks))
         .route("/bookmarks/health", get(bookmarks_health))
         .route("/rss/{feed}", get(rss_feed))
+        .route("/jellyfin/status", get(jellyfin_status))
+        .route("/jellyfin/images/{item_id}", get(jellyfin_image))
 }
 
 async fn health() -> Json<serde_json::Value> {
@@ -52,6 +56,7 @@ struct PublicConfig {
     bookmark_groups: Vec<String>,
     rss_feeds: Vec<String>,
     search_engines: Vec<SearchEngineConfig>,
+    jellyfin_configured: bool,
     theme: PublicTheme,
     persist_layout: bool,
     locale: String,
@@ -80,6 +85,9 @@ impl From<&AppConfig> for PublicConfig {
             bookmark_groups: c.bookmarks.iter().map(|b| b.name.clone()).collect(),
             rss_feeds: c.rss.iter().map(|r| r.name.clone()).collect(),
             search_engines: c.search_engines.clone(),
+            jellyfin_configured: c.jellyfin.as_ref().is_some_and(|j| {
+                !j.url.trim().is_empty() && !j.api_key.trim().is_empty()
+            }),
             theme: PublicTheme::from(&c.theme),
             persist_layout: c.settings.persist_layout,
             locale: c.settings.locale.clone(),
@@ -351,4 +359,67 @@ async fn rss_feed(
         .get_feed(&feed_cfg.name, &feed_cfg.url, max_items, feed_cfg.refresh_minutes)
         .await?;
     Ok(Json(data))
+}
+
+#[derive(Deserialize)]
+struct JellyfinStatusQuery {
+    #[serde(default = "default_true")]
+    show_now_playing: bool,
+    #[serde(default = "default_true")]
+    show_library_counts: bool,
+    #[serde(default = "default_max_sessions_query")]
+    max_sessions: u32,
+}
+
+fn default_true() -> bool {
+    true
+}
+
+fn default_max_sessions_query() -> u32 {
+    3
+}
+
+async fn jellyfin_status(
+    State(state): State<Arc<AppState>>,
+    Query(q): Query<JellyfinStatusQuery>,
+) -> AppResult<Json<crate::services::jellyfin::JellyfinStatus>> {
+    let config = state.config.get().await;
+    let jellyfin_cfg = config
+        .jellyfin
+        .as_ref()
+        .ok_or_else(|| AppError::BadRequest("Jellyfin not configured".into()))?;
+
+    let cache_secs = config.refresh_interval.max(5);
+    let status = state
+        .jellyfin
+        .get_status(
+            jellyfin_cfg,
+            q.show_now_playing,
+            q.show_library_counts,
+            q.max_sessions.max(1),
+            cache_secs,
+        )
+        .await?;
+
+    Ok(Json(status))
+}
+
+async fn jellyfin_image(
+    State(state): State<Arc<AppState>>,
+    Path(item_id): Path<String>,
+) -> AppResult<Response> {
+    let config = state.config.get().await;
+    let jellyfin_cfg = config
+        .jellyfin
+        .as_ref()
+        .ok_or_else(|| AppError::BadRequest("Jellyfin not configured".into()))?;
+
+    let (bytes, content_type) = state.jellyfin.get_image(jellyfin_cfg, &item_id).await?;
+
+    Ok((
+        StatusCode::OK,
+        [(header::CONTENT_TYPE, content_type)],
+        bytes,
+    )
+        .into_response())
 }

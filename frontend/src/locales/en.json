@@ -37,6 +37,10 @@
 	"docker_updates_prune_done": "{count} image(s) deleted, {size} reclaimed",
 	"docker_updates_update": "Update",
 	"docker_updates_error": "Docker error",
+	"docker_stack_title": "Docker stacks",
+	"docker_stack_no_stacks": "No stacks configured",
+	"docker_stack_running": "{running}/{total} running",
+	"docker_stack_empty": "No containers found",
 	"dashboard_loading": "Loading…",
 	"dashboard_no_widgets": "No widgets configured",
 	"dashboard_layout_saved": "Layout saved to config/layout.yaml",
@@ -48,5 +52,13 @@
 	"login_error": "Unable to sign in",
 	"header_live": "Live",
 	"header_connecting": "Connecting…",
-	"logout": "Sign out"
+	"logout": "Sign out",
+	"jellyfin_loading": "Loading Jellyfin…",
+	"jellyfin_error": "Jellyfin error",
+	"jellyfin_not_configured": "Jellyfin not configured (services.yaml)",
+	"jellyfin_now_playing": "Now playing",
+	"jellyfin_nothing_playing": "Nothing playing",
+	"jellyfin_movies": "Movies",
+	"jellyfin_series": "Series",
+	"jellyfin_episodes": "Episodes"
 }

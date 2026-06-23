@@ -97,6 +97,21 @@ export const api = {
 		return request<import('./types').BookmarkHealthResult[]>(`/bookmarks/health${qs}`);
 	},
 
+	getJellyfinStatus: (options?: {
+		showNowPlaying?: boolean;
+		showLibraryCounts?: boolean;
+		maxSessions?: number;
+	}) => {
+		const params = new URLSearchParams();
+		if (options?.showNowPlaying === false) params.set('show_now_playing', 'false');
+		if (options?.showLibraryCounts === false) params.set('show_library_counts', 'false');
+		if (options?.maxSessions != null) params.set('max_sessions', String(options.maxSessions));
+		const qs = params.toString();
+		return request<import('./types').JellyfinStatus>(`/jellyfin/status${qs ? `?${qs}` : ''}`);
+	},
+
+	jellyfinImageUrl: (itemId: string) => `${API_BASE}/jellyfin/images/${encodeURIComponent(itemId)}`,
+
 	saveLayout: (widgets: import('./types').WidgetLayout[]) =>
 		request<import('./types').LayoutSaveResponse>('/config/layout', {
 			method: 'PUT',

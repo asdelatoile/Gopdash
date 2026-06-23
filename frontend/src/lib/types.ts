@@ -1,6 +1,12 @@
-export type WidgetType = 'docker' | 'docker-updates' | 'system' | 'weather' | 'bookmarks' | 'rss' | 'calendar' | 'search';
+export type WidgetType = 'docker' | 'docker-updates' | 'docker-stack' | 'system' | 'weather' | 'bookmarks' | 'rss' | 'calendar' | 'search' | 'jellyfin';
 export type DockerGroupBy = 'flat' | 'compose';
 export type SearchTarget = 'new-tab' | 'same-tab';
+
+export interface DockerStackGroup {
+	name: string;
+	/** Noms de containers ou projets Compose */
+	targets: string[];
+}
 
 interface BaseWidget {
 	id: string;
@@ -28,6 +34,10 @@ export type WidgetConfig =
 			containers?: string[];
 			show_all?: boolean;
 	  })
+	| (BaseWidget & {
+			type: 'docker-stack';
+			stacks: DockerStackGroup[];
+	  })
 	| (BaseWidget & { type: 'weather'; location?: string; units?: string; show_forecast?: boolean })
 	| (BaseWidget & { type: 'bookmarks'; group?: string; /** Nombre de colonnes (défaut : 3) */ columns?: number })
 	| (BaseWidget & { type: 'rss'; feed?: string; max_items?: number })
@@ -46,6 +56,12 @@ export type WidgetConfig =
 			engine: string;
 			/** new-tab (défaut) | same-tab */
 			target?: SearchTarget;
+	  })
+	| (BaseWidget & {
+			type: 'jellyfin';
+			show_now_playing?: boolean;
+			show_library_counts?: boolean;
+			max_sessions?: number;
 	  });
 
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -71,6 +87,7 @@ export interface AppConfig {
 	weather_show_forecast: boolean;
 	bookmark_groups: string[];
 	rss_feeds: string[];
+	jellyfin_configured: boolean;
 	search_engines: SearchEngineConfig[];
 	theme: ThemeConfig;
 	persist_layout: boolean;
@@ -213,6 +230,34 @@ export interface SearchEngineConfig {
 	/** URL avec placeholder `{query}` */
 	url: string;
 	icon?: string;
+}
+
+export interface JellyfinNowPlayingSession {
+	user_name: string;
+	client: string;
+	device_name: string;
+	item_id: string;
+	item_type: string;
+	title: string;
+	series_name: string | null;
+	season_episode: string | null;
+	year: number | null;
+	is_paused: boolean;
+	position_ticks: number;
+	runtime_ticks: number;
+}
+
+export interface JellyfinLibraryCounts {
+	movies: number;
+	series: number;
+	episodes: number;
+	music_albums: number;
+	music_tracks: number;
+}
+
+export interface JellyfinStatus {
+	now_playing: JellyfinNowPlayingSession[];
+	library_counts: JellyfinLibraryCounts | null;
 }
 
 export interface SSEUpdate {
