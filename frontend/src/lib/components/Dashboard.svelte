@@ -14,6 +14,8 @@
 
 	const persistLayout = $derived(appConfig.data?.persist_layout ?? false);
 	const locale = $derived(resolveLocale(appConfig.data));
+	const gridColumns = $derived(appConfig.data?.grid?.columns ?? 24);
+	const gridCellHeight = $derived(appConfig.data?.grid?.cell_height ?? 15);
 
 	const widgets = $derived(
 		appConfig.data && !appConfig.loading ? resolveWidgets(appConfig.data.widgets) : []
@@ -29,6 +31,8 @@
 
 	$effect(() => {
 		if (appConfig.loading || widgets.length === 0 || !gridEl) return;
+		const columns = gridColumns;
+		const cellHeight = gridCellHeight;
 
 		void tick().then(() => {
 			if (!gridEl || widgets.length === 0) return;
@@ -40,8 +44,8 @@
 
 			grid = GridStack.init(
 				{
-					column: 12,
-					cellHeight: 15,
+					column: columns,
+					cellHeight: cellHeight,
 					margin: 10,
 					animate: true,
 					float: true,

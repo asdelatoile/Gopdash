@@ -20,3 +20,7 @@ settings:
   persist_layout: true
   locale: fr-FR
   timezone: Europe/Paris
+  # Grille Gridstack (colonnes × hauteur de cellule en px)
+  grid:
+    columns: 24
+    cell_height: 15

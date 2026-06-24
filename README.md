@@ -159,6 +159,9 @@ settings:
   persist_layout: true
   locale: fr-FR          # BCP 47 — fr-FR, en-US…
   timezone: Europe/Paris # IANA — Europe/Paris, America/New_York…
+  grid:
+    columns: 24          # colonnes Gridstack (défaut : 24)
+    cell_height: 15      # hauteur d'une cellule en px (défaut : 15)
 ```
 
 Ces valeurs sont exposées via `/api/config` et utilisées par les widgets (dates, unités, libellés).

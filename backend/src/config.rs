@@ -362,6 +362,31 @@ fn default_theme_preset() -> ThemePreset {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct GridSettings {
+    #[serde(default = "default_grid_columns")]
+    pub columns: u32,
+    #[serde(default = "default_grid_cell_height")]
+    pub cell_height: u32,
+}
+
+impl Default for GridSettings {
+    fn default() -> Self {
+        Self {
+            columns: default_grid_columns(),
+            cell_height: default_grid_cell_height(),
+        }
+    }
+}
+
+fn default_grid_columns() -> u32 {
+    24
+}
+
+fn default_grid_cell_height() -> u32 {
+    15
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SettingsConfig {
     #[serde(default = "default_persist_layout")]
     pub persist_layout: bool,
@@ -371,6 +396,8 @@ pub struct SettingsConfig {
     /// IANA, ex. Europe/Paris
     #[serde(default = "default_timezone")]
     pub timezone: String,
+    #[serde(default)]
+    pub grid: GridSettings,
 }
 
 impl Default for SettingsConfig {
@@ -379,6 +406,7 @@ impl Default for SettingsConfig {
             persist_layout: default_persist_layout(),
             locale: default_locale(),
             timezone: default_timezone(),
+            grid: GridSettings::default(),
         }
     }
 }

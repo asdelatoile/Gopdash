@@ -57,10 +57,18 @@ struct PublicConfig {
     rss_feeds: Vec<String>,
     search_engines: Vec<SearchEngineConfig>,
     jellyfin_configured: bool,
+    jellyfin_url: Option<String>,
     theme: PublicTheme,
     persist_layout: bool,
     locale: String,
     timezone: String,
+    grid: PublicGrid,
+}
+
+#[derive(Serialize)]
+struct PublicGrid {
+    columns: u32,
+    cell_height: u32,
 }
 
 #[derive(Serialize)]
@@ -88,10 +96,22 @@ impl From<&AppConfig> for PublicConfig {
             jellyfin_configured: c.jellyfin.as_ref().is_some_and(|j| {
                 !j.url.trim().is_empty() && !j.api_key.trim().is_empty()
             }),
+            jellyfin_url: c.jellyfin.as_ref().and_then(|j| {
+                let url = j.url.trim();
+                if url.is_empty() {
+                    None
+                } else {
+                    Some(url.trim_end_matches('/').to_string())
+                }
+            }),
             theme: PublicTheme::from(&c.theme),
             persist_layout: c.settings.persist_layout,
             locale: c.settings.locale.clone(),
             timezone: c.settings.timezone.clone(),
+            grid: PublicGrid {
+                columns: c.settings.grid.columns,
+                cell_height: c.settings.grid.cell_height,
+            },
         }
     }
 }

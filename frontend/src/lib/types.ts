@@ -94,11 +94,18 @@ export interface AppConfig {
 	bookmark_groups: string[];
 	rss_feeds: string[];
 	jellyfin_configured: boolean;
+	jellyfin_url: string | null;
 	search_engines: SearchEngineConfig[];
 	theme: ThemeConfig;
 	persist_layout: boolean;
 	locale: string;
 	timezone: string;
+	grid: GridSettings;
+}
+
+export interface GridSettings {
+	columns: number;
+	cell_height: number;
 }
 
 export interface LayoutSaveResponse {
