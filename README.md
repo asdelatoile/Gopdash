@@ -2,9 +2,11 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Dashboard self-hosted ultra-léger. Un seul container Docker, drag & drop de widgets, hot-reload de la configuration.
+Dashboard self-hosted ultra-léger. Un seul container Docker, drag & drop, resize de widgets, hot-reload de la configuration.
 
 ![Aperçu du tableau de bord Gopdash](docs/dashboard-preview.png)
+
+![Autre exemple de dashboard](docs/dashboard-preview-2.png)
 
 ## Stack
 
@@ -92,11 +94,61 @@ Gopdash/
 | `docker-updates` | Mises à jour d'images Docker (pull + recréation + prune) | `type: docker-updates` |
 | `docker-stack` | Contrôle groupé start/stop/restart de stacks | `type: docker-stack` + `stacks` |
 | `weather` | OpenWeatherMap current + 5 jours | `type: weather` |
-| `bookmarks` | Groupes de liens favoris (+ health check optionnel) | `type: bookmarks` + `columns` (défaut 3) |
-| `rss` | Flux RSS récents | `type: rss` |
+| `bookmarks` | Groupes de liens favoris (+ health check optionnel) | `type: bookmarks` + `service_id` |
+| `rss` | Flux RSS récents | `type: rss` + `service_id` |
 | `calendar` | Calendrier mensuel + horloge (locale / fuseau) | `type: calendar` + `show_today`, `show_outside_days`, `show_navigation` |
-| `search` | Recherche web multi-moteurs | `type: search` + `engine`, `target` |
+| `search` | Recherche web multi-moteurs | `type: search` + `service_id`, `target` |
 | `jellyfin` | Now Playing + compteurs bibliothèque | `type: jellyfin` + config dans `services.yaml` |
+
+### Liaison services.yaml ↔ dashboard.yaml
+
+Les widgets `bookmarks`, `rss` et `search` référencent une entrée de `services.yaml` via **`service_id`** :
+
+| Widget | `service_id` pointe vers |
+|--------|--------------------------|
+| `bookmarks` | `bookmarks[].id` |
+| `rss` | `rss[].id` |
+| `search` | `search_engines[].id` |
+
+Exemple — **services.yaml** (les données) :
+
+```yaml
+bookmarks:
+  - id: media
+    title: Media
+    links:
+      - name: Jellyfin
+        url: https://jellyfin.local
+        icon: sh:jellyfin
+
+rss:
+  - id: tech
+    url: https://hnrss.org/frontpage
+
+search_engines:
+  - id: google
+    name: Google
+    url: https://www.google.com/search?q={query}
+```
+
+**dashboard.yaml** (le widget) :
+
+```yaml
+- type: bookmarks
+  id: bookmarks-media      # id du widget (layout uniquement)
+  title: Multimedia        # titre affiché (libre)
+  service_id: media        # ← bookmarks[].id
+
+- type: rss
+  id: rss-tech
+  title: Hacker News
+  service_id: tech         # ← rss[].id
+
+- type: search
+  id: search-google
+  title: Google
+  service_id: google       # ← search_engines[].id
+```
 
 ### Locale et fuseau horaire
 
@@ -115,7 +167,7 @@ Les textes de l'interface sont dans `frontend/src/locales/` (`fr.json`, `en.json
 
 ### Moteurs de recherche
 
-Définis dans `config/services.yaml` — un widget `search` = un moteur (via `engine`) :
+Définis dans `config/services.yaml` — un widget `search` = un moteur (via `service_id`) :
 
 ```yaml
 search_engines:
@@ -132,8 +184,8 @@ Dans `config/dashboard.yaml` (un widget par moteur souhaité) :
   id: search-google
   title: Google
   icon: sh:google
-  engine: google      # id du moteur (services.yaml)
-  target: new-tab     # new-tab | same-tab
+  service_id: google    # search_engines[].id
+  target: new-tab       # new-tab | same-tab
 ```
 
 ### Health check sur les favoris
@@ -142,7 +194,7 @@ Sur chaque lien dans `config/services.yaml` → `bookmarks`, active la surveilla
 
 ```yaml
 bookmarks:
-  - name: Media
+  - id: media
     links:
       - name: Jellyfin
         url: https://jellyfin.local
@@ -240,7 +292,7 @@ Le backend proxy les appels Jellyfin (`/Sessions`, `/Items/Counts`) et les poste
 | `/api/system` | GET | Métriques système |
 | `/api/weather` | GET | Météo |
 | `/api/bookmarks` | GET | Liens favoris |
-| `/api/bookmarks/health` | GET | Statut des liens avec `health_check` (`?group=Media`) |
+| `/api/bookmarks/health` | GET | Statut des liens avec `health_check` (`?service_id=media`) |
 | `/api/rss/{feed}` | GET | Articles RSS |
 | `/api/events` | GET (SSE) | Mises à jour temps réel |
 

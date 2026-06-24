@@ -17,7 +17,7 @@
 
 	const locale = $derived(resolveLocale(appConfig.data));
 	const engine = $derived(
-		appConfig.data?.search_engines.find((e) => e.id === widget.engine) ?? null
+		appConfig.data?.search_engines.find((e) => e.id === widget.service_id) ?? null
 	);
 	const openInNewTab = $derived((widget.target ?? 'new-tab') === 'new-tab');
 

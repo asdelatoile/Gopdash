@@ -16,7 +16,7 @@ pub struct RssItem {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct RssFeedData {
-    pub name: String,
+    pub id: String,
     pub items: Vec<RssItem>,
 }
 
@@ -47,7 +47,7 @@ impl RssService {
 
     pub async fn get_feed(
         &self,
-        name: &str,
+        id: &str,
         url: &str,
         max_items: u32,
         refresh_minutes: u64,
@@ -64,7 +64,7 @@ impl RssService {
             }
         }
 
-        let data = self.fetch_feed(name, url, max_items).await?;
+        let data = self.fetch_feed(id, url, max_items).await?;
 
         self.cache.write().await.insert(
             cache_key,
@@ -78,7 +78,7 @@ impl RssService {
         Ok(data)
     }
 
-    async fn fetch_feed(&self, name: &str, url: &str, max_items: u32) -> AppResult<RssFeedData> {
+    async fn fetch_feed(&self, id: &str, url: &str, max_items: u32) -> AppResult<RssFeedData> {
         let response = self
             .client
             .get(url)
@@ -121,7 +121,7 @@ impl RssService {
             .collect();
 
         Ok(RssFeedData {
-            name: name.into(),
+            id: id.into(),
             items,
         })
     }

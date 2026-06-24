@@ -21,11 +21,14 @@
 	const refreshMs = $derived((appConfig.data?.refresh_interval ?? 30) * 1000);
 	const columns = $derived(Math.min(6, Math.max(1, widget.columns ?? 3)));
 
+	const serviceId = $derived(widget.service_id);
+
 	let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 	async function loadHealth() {
+		if (!serviceId) return;
 		try {
-			const results = await api.getBookmarkHealth(widget.group);
+			const results = await api.getBookmarkHealth(serviceId);
 			healthByName = Object.fromEntries(results.map((r) => [r.name, r]));
 		} catch (e) {
 			console.error('Failed to load bookmark health:', e);
@@ -33,8 +36,9 @@
 	}
 
 	async function loadAll() {
+		if (!serviceId) return;
 		try {
-			groups = await api.getBookmarks(widget.group);
+			groups = await api.getBookmarks(serviceId);
 		} catch (e) {
 			console.error('Failed to load bookmarks:', e);
 		}
@@ -55,7 +59,7 @@
 	});
 </script>
 
-<WidgetHeader {widget} title={widget.title ?? widget.group ?? 'Liens'} />
+<WidgetHeader {widget} title={widget.title ?? (serviceId || 'Liens')} />
 <CardContent>
 	{#each groups as group}
 		<div class="grid gap-2" style="grid-template-columns: repeat({columns}, minmax(0, 1fr));">

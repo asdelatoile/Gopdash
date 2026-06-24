@@ -9,7 +9,8 @@ docker:
   socket_path: /var/run/docker.sock
 
 bookmarks:
-  - name: Infrastructure
+  - id: infrastructure
+    title: Infrastructure
     links:
       - name: Proxmox
         url: https://proxmox.local
@@ -19,7 +20,8 @@ bookmarks:
         url: https://portainer.local
         icon: sh:portainer
         description: Docker UI
-  - name: Media
+  - id: media
+    title: Media
     links:
       - name: Jellyfin
         url: https://xxx.xxx.com
@@ -45,10 +47,10 @@ bookmarks:
         description: Torrents
 
 rss:
-  - name: tech
+  - id: tech
     url: https://hnrss.org/frontpage
     refresh_minutes: 15
-  - name: selfhosted
+  - id: selfhosted
     url: https://hnrss.org/newest?q=selfhosted
     refresh_minutes: 30
 

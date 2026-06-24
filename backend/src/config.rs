@@ -171,7 +171,8 @@ pub enum WidgetConfig {
         w: i32,
         #[serde(default = "default_h")]
         h: i32,
-        group: String,
+        /// ID de l'entrée dans services.yaml → bookmarks[].id
+        service_id: String,
         #[serde(default = "default_bookmark_columns")]
         columns: u32,
         #[serde(default = "default_show_header")]
@@ -189,7 +190,7 @@ pub enum WidgetConfig {
         w: i32,
         #[serde(default = "default_h")]
         h: i32,
-        feed: String,
+        service_id: String,
         #[serde(default = "default_max_items")]
         max_items: u32,
         #[serde(default = "default_show_header")]
@@ -233,8 +234,8 @@ pub enum WidgetConfig {
         h: i32,
         #[serde(default = "default_show_header")]
         show_header: bool,
-        /// ID du moteur par défaut (services.yaml → search_engines)
-        engine: String,
+        /// ID de l'entrée dans services.yaml → search_engines[].id
+        service_id: String,
         #[serde(default)]
         target: SearchTarget,
     },
@@ -494,7 +495,10 @@ pub struct SearchEngineConfig {
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BookmarkGroup {
-    pub name: String,
+    pub id: String,
+    /// Libellé optionnel (affichage / debug)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
     pub links: Vec<BookmarkLink>,
 }
 
@@ -530,7 +534,7 @@ fn default_health_timeout() -> u64 {
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RssFeedConfig {
-    pub name: String,
+    pub id: String,
     pub url: String,
     #[serde(default = "default_rss_refresh")]
     pub refresh_minutes: u64,

@@ -19,16 +19,16 @@
 	const timezone = $derived(resolveTimezone(appConfig.data));
 
 	onMount(async () => {
-		if (!widget.feed) return;
+		if (!widget.service_id) return;
 		try {
-			feed = await api.getRss(widget.feed);
+			feed = await api.getRss(widget.service_id);
 		} catch (e) {
 			error = e instanceof Error ? e.message : t('rss_error', locale);
 		}
 	});
 </script>
 
-<WidgetHeader {widget} title={widget.title ?? widget.feed ?? 'RSS'} />
+<WidgetHeader {widget} title={widget.title ?? widget.service_id ?? 'RSS'} />
 <CardContent>
 	{#if error}
 		<p class="text-xs text-destructive">{error}</p>

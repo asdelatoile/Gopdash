@@ -39,8 +39,14 @@ export type WidgetConfig =
 			stacks: DockerStackGroup[];
 	  })
 	| (BaseWidget & { type: 'weather'; location?: string; units?: string; show_forecast?: boolean })
-	| (BaseWidget & { type: 'bookmarks'; group?: string; /** Nombre de colonnes (défaut : 3) */ columns?: number })
-	| (BaseWidget & { type: 'rss'; feed?: string; max_items?: number })
+	| (BaseWidget & {
+			type: 'bookmarks';
+			/** ID de l'entrée dans services.yaml → bookmarks[].id */
+			service_id: string;
+			/** Nombre de colonnes (défaut : 3) */
+			columns?: number;
+	  })
+	| (BaseWidget & { type: 'rss'; service_id: string; max_items?: number })
 	| (BaseWidget & {
 			type: 'calendar';
 			/** Affiche le jour et l'heure actuels au-dessus de la grille (défaut : true) */
@@ -52,8 +58,8 @@ export type WidgetConfig =
 	  })
 	| (BaseWidget & {
 			type: 'search';
-			/** ID du moteur par défaut (services.yaml → search_engines) */
-			engine: string;
+			/** ID de l'entrée dans services.yaml → search_engines[].id */
+			service_id: string;
 			/** new-tab (défaut) | same-tab */
 			target?: SearchTarget;
 	  })
@@ -182,7 +188,8 @@ export interface ForecastDay {
 }
 
 export interface BookmarkGroup {
-	name: string;
+	id: string;
+	title?: string;
 	links: BookmarkLink[];
 }
 
@@ -213,7 +220,7 @@ export interface BookmarkHealthResult {
 export type HealthStatus = 'up' | 'down';
 
 export interface RssFeedData {
-	name: string;
+	id: string;
 	items: RssItem[];
 }
 

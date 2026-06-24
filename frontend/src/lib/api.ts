@@ -85,15 +85,16 @@ export const api = {
 		return request<import('./types').WeatherData>(`/weather${qs}`);
 	},
 
-	getBookmarks: (group?: string) => {
-		const qs = group ? `?group=${encodeURIComponent(group)}` : '';
+	getBookmarks: (serviceId?: string) => {
+		const qs = serviceId ? `?service_id=${encodeURIComponent(serviceId)}` : '';
 		return request<import('./types').BookmarkGroup[]>(`/bookmarks${qs}`);
 	},
 
-	getRss: (feed: string) => request<import('./types').RssFeedData>(`/rss/${encodeURIComponent(feed)}`),
+	getRss: (serviceId: string) =>
+		request<import('./types').RssFeedData>(`/rss/${encodeURIComponent(serviceId)}`),
 
-	getBookmarkHealth: (group?: string) => {
-		const qs = group ? `?group=${encodeURIComponent(group)}` : '';
+	getBookmarkHealth: (serviceId?: string) => {
+		const qs = serviceId ? `?service_id=${encodeURIComponent(serviceId)}` : '';
 		return request<import('./types').BookmarkHealthResult[]>(`/bookmarks/health${qs}`);
 	},
 

@@ -34,7 +34,7 @@ widgets:
     id: search-1
     title: Recherche
     icon: lucide:search
-    engine: duckduckgo   # id dans services.yaml → search_engines
+    service_id: duckduckgo
     target: same-tab      # new-tab | same-tab
 
   - type: docker
@@ -72,7 +72,7 @@ widgets:
     id: bookmarks-media
     title: Media
     icon: lucide:video
-    group: Media
+    service_id: media   # services.yaml → bookmarks[].id
     columns: 2   # défaut : 3
 
   - type: jellyfin
@@ -87,20 +87,20 @@ widgets:
     id: bookmarks-infra
     title: Infrastructure
     icon: lucide:network
-    group: Infrastructure
+    service_id: infrastructure
     columns: 2
 
   - type: rss
     id: rss-tech
     title: Hacker News
     icon: lucide:newspaper
-    feed: tech
+    service_id: tech
     max_items: 8
 
   - type: rss
     id: rss-selfhosted
     title: Self-hosted
     icon: lucide:rss
-    feed: selfhosted
+    service_id: selfhosted
     max_items: 8
     show_header: false

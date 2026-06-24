@@ -82,8 +82,8 @@ impl From<&AppConfig> for PublicConfig {
                 .as_ref()
                 .map(|w| w.show_forecast)
                 .unwrap_or(true),
-            bookmark_groups: c.bookmarks.iter().map(|b| b.name.clone()).collect(),
-            rss_feeds: c.rss.iter().map(|r| r.name.clone()).collect(),
+            bookmark_groups: c.bookmarks.iter().map(|b| b.id.clone()).collect(),
+            rss_feeds: c.rss.iter().map(|r| r.id.clone()).collect(),
             search_engines: c.search_engines.clone(),
             jellyfin_configured: c.jellyfin.as_ref().is_some_and(|j| {
                 !j.url.trim().is_empty() && !j.api_key.trim().is_empty()
@@ -284,20 +284,20 @@ async fn weather(
 }
 
 #[derive(Deserialize)]
-struct BookmarkQuery {
-    group: Option<String>,
+struct ServiceIdQuery {
+    service_id: Option<String>,
 }
 
 async fn bookmarks(
     State(state): State<Arc<AppState>>,
-    Query(q): Query<BookmarkQuery>,
+    Query(q): Query<ServiceIdQuery>,
 ) -> AppResult<Json<Vec<crate::config::BookmarkGroup>>> {
     let config = state.config.get().await;
-    let groups = if let Some(name) = q.group {
+    let groups = if let Some(id) = q.service_id {
         config
             .bookmarks
             .into_iter()
-            .filter(|g| g.name == name)
+            .filter(|g| g.id == id)
             .collect()
     } else {
         config.bookmarks
@@ -307,18 +307,18 @@ async fn bookmarks(
 
 async fn bookmarks_health(
     State(state): State<Arc<AppState>>,
-    Query(q): Query<BookmarkQuery>,
+    Query(q): Query<ServiceIdQuery>,
 ) -> AppResult<Json<Vec<crate::services::health::BookmarkHealthResult>>> {
     let config = state.config.get().await;
-    let groups: Vec<_> = if let Some(ref name) = q.group {
-        config.bookmarks.iter().filter(|g| &g.name == name).collect()
+    let groups: Vec<_> = if let Some(ref id) = q.service_id {
+        config.bookmarks.iter().filter(|g| &g.id == id).collect()
     } else {
         config.bookmarks.iter().collect()
     };
 
     let links: Vec<(&str, &crate::config::BookmarkLink)> = groups
         .iter()
-        .flat_map(|g| g.links.iter().map(|l| (g.name.as_str(), l)))
+        .flat_map(|g| g.links.iter().map(|l| (g.id.as_str(), l)))
         .collect();
 
     let cache_secs = config.refresh_interval.max(15);
@@ -329,21 +329,21 @@ async fn bookmarks_health(
 
 async fn rss_feed(
     State(state): State<Arc<AppState>>,
-    Path(feed): Path<String>,
+    Path(service_id): Path<String>,
 ) -> AppResult<Json<crate::services::rss::RssFeedData>> {
     let config = state.config.get().await;
     let feed_cfg = config
         .rss
         .iter()
-        .find(|f| f.name == feed)
-        .ok_or_else(|| AppError::NotFound(format!("RSS feed not found: {feed}")))?;
+        .find(|f| f.id == service_id)
+        .ok_or_else(|| AppError::NotFound(format!("RSS feed not found: {service_id}")))?;
 
     let max_items = config
         .widgets
         .iter()
         .find_map(|w| {
-            if let WidgetConfig::Rss { feed: f, max_items, .. } = w {
-                if f == &feed {
+            if let WidgetConfig::Rss { service_id: sid, max_items, .. } = w {
+                if sid == &service_id {
                     Some(*max_items)
                 } else {
                     None
@@ -356,7 +356,7 @@ async fn rss_feed(
 
     let data = state
         .rss
-        .get_feed(&feed_cfg.name, &feed_cfg.url, max_items, feed_cfg.refresh_minutes)
+        .get_feed(&feed_cfg.id, &feed_cfg.url, max_items, feed_cfg.refresh_minutes)
         .await?;
     Ok(Json(data))
 }
