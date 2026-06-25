@@ -64,12 +64,13 @@ export const api = {
 	restartContainer: (id: string) =>
 		request(`/docker/containers/${id}/restart`, { method: 'POST' }),
 
-	getDockerUpdates: (filter?: string, showAll?: boolean) => {
+	getDockerUpdates: (filter?: string, showAll?: boolean, force?: boolean) => {
 		const params = new URLSearchParams();
 		if (filter) params.set('filter', filter);
 		if (showAll) params.set('show_all', 'true');
+		if (force) params.set('force', 'true');
 		const qs = params.toString();
-		return request<import('./types').ContainerUpdateInfo[]>(`/docker/updates${qs ? `?${qs}` : ''}`);
+		return request<import('./types').DockerUpdatesResponse>(`/docker/updates${qs ? `?${qs}` : ''}`);
 	},
 
 	updateContainer: (id: string) =>

@@ -6,6 +6,7 @@
 	import { page } from '$app/stores';
 	import { authState, checkSession } from '$lib/auth.svelte';
 	import type { ThemeMode } from '$lib/types';
+	import { appConfig } from '$lib/config.svelte';
 
 	let { children } = $props();
 
@@ -37,5 +38,9 @@
 </script>
 
 <ModeWatcher defaultMode={defaultMode} />
+
+<svelte:head>
+	<title>{appConfig.data?.title ?? 'GopDash'}</title>
+</svelte:head>
 
 {@render children()}

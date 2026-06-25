@@ -52,12 +52,12 @@ pub struct JellyfinService {
 impl JellyfinService {
     pub fn new() -> Self {
         let client = Client::builder()
-            .user_agent("Gopdash/0.1 (jellyfin)")
+            .user_agent("GopDash/0.1 (jellyfin)")
             .build()
             .unwrap_or_default();
 
         let insecure_client = Client::builder()
-            .user_agent("Gopdash/0.1 (jellyfin)")
+            .user_agent("GopDash/0.1 (jellyfin)")
             .danger_accept_invalid_certs(true)
             .build()
             .unwrap_or_default();
@@ -222,7 +222,7 @@ impl JellyfinService {
 
 fn auth_header(api_key: &str) -> String {
     format!(
-        r#"MediaBrowser Client="Gopdash", Device="Gopdash", DeviceId="gopdash", Version="0.1.0", Token="{}""#,
+        r#"MediaBrowser Client="GopDash", Device="GopDash", DeviceId="gopdash", Version="0.1.0", Token="{}""#,
         api_key
     )
 }

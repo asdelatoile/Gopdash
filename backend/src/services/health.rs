@@ -46,14 +46,14 @@ pub struct HealthService {
 impl HealthService {
     pub fn new() -> Self {
         let client = Client::builder()
-            .user_agent("Gopdash/0.1 (health-check)")
+            .user_agent("GopDash/0.1 (health-check)")
             .cookie_store(true)
             .redirect(reqwest::redirect::Policy::limited(5))
             .build()
             .unwrap_or_default();
 
         let insecure_client = Client::builder()
-            .user_agent("Gopdash/0.1 (health-check)")
+            .user_agent("GopDash/0.1 (health-check)")
             .danger_accept_invalid_certs(true)
             .cookie_store(true)
             .redirect(reqwest::redirect::Policy::limited(5))

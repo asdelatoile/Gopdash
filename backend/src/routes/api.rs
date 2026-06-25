@@ -179,6 +179,13 @@ struct ContainerQuery {
     show_all: Option<bool>,
 }
 
+#[derive(Deserialize)]
+struct UpdatesQuery {
+    filter: Option<String>,
+    show_all: Option<bool>,
+    force: Option<bool>,
+}
+
 async fn list_containers(
     State(state): State<Arc<AppState>>,
     Query(q): Query<ContainerQuery>,
@@ -229,8 +236,8 @@ async fn restart_container(
 
 async fn list_docker_updates(
     State(state): State<Arc<AppState>>,
-    Query(q): Query<ContainerQuery>,
-) -> AppResult<Json<Vec<crate::services::docker_updates::ContainerUpdateInfo>>> {
+    Query(q): Query<UpdatesQuery>,
+) -> AppResult<Json<crate::services::docker_updates::DockerUpdatesResponse>> {
     let config = state.config.get().await;
     let filter_names: Vec<String> = q
         .filter
@@ -247,8 +254,14 @@ async fn list_docker_updates(
         })
     });
 
-    let updates = state.docker.list_updates(&filter_names, show_all).await?;
-    Ok(Json(updates))
+    let force = q.force.unwrap_or(false);
+    let refresh_hours = config.docker.refresh_hours.max(1);
+
+    let response = state
+        .docker
+        .list_updates(&filter_names, show_all, force, refresh_hours)
+        .await?;
+    Ok(Json(response))
 }
 
 async fn update_container_image(

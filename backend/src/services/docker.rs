@@ -1,3 +1,4 @@
+use crate::config::{AppConfig, ConfigManager, WidgetConfig};
 use crate::error::{AppError, AppResult};
 use bollard::container::{
     ListContainersOptions, MemoryStats, RestartContainerOptions, StartContainerOptions,
@@ -8,9 +9,10 @@ use bollard::models::ContainerSummary;
 use bollard::Docker;
 use futures::StreamExt;
 use serde::Serialize;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::RwLock;
 
 #[derive(Debug, Clone, Serialize)]
@@ -81,10 +83,13 @@ impl DockerService {
         &self,
         filter_names: &[String],
         show_all: bool,
-    ) -> AppResult<Vec<crate::services::docker_updates::ContainerUpdateInfo>> {
+        force: bool,
+        refresh_hours: u64,
+    ) -> AppResult<crate::services::docker_updates::DockerUpdatesResponse> {
         let docker = self.docker()?;
+        let ttl_secs = refresh_hours.saturating_mul(3600).max(60);
         self.updates
-            .list_updates(docker, filter_names, show_all)
+            .get_updates(docker, filter_names, show_all, force, ttl_secs)
             .await
     }
 
@@ -241,6 +246,32 @@ impl DockerService {
             .await
             .map_err(|e| AppError::Docker(e.to_string()))?;
         Ok(())
+    }
+
+    pub fn spawn_updates_checker(self: Arc<Self>, config: Arc<ConfigManager>) {
+        if self.docker.is_none() {
+            return;
+        }
+        tokio::spawn(async move {
+            loop {
+                let cfg = config.get().await;
+                let refresh_hours = cfg.docker.refresh_hours.max(1);
+
+                for (filter, show_all) in collect_updates_queries(&cfg) {
+                    if let Err(e) = self
+                        .list_updates(&filter, show_all, true, refresh_hours)
+                        .await
+                    {
+                        tracing::warn!(
+                            "Background docker updates check failed (show_all={show_all}): {e}"
+                        );
+                    }
+                }
+
+                let ttl_secs = refresh_hours.saturating_mul(3600).max(60);
+                tokio::time::sleep(Duration::from_secs(ttl_secs)).await;
+            }
+        });
     }
 
     pub fn spawn_stats_collector(self: Arc<Self>) {
@@ -413,4 +444,28 @@ fn calc_memory(stats: &MemoryStats) -> (u64, u64) {
     let usage = stats.usage.unwrap_or(0);
     let limit = stats.limit.unwrap_or(0);
     (usage, limit)
+}
+
+fn collect_updates_queries(config: &AppConfig) -> Vec<(Vec<String>, bool)> {
+    let mut seen = HashSet::new();
+    let mut out = Vec::new();
+
+    for widget in &config.widgets {
+        let WidgetConfig::DockerUpdates {
+            containers,
+            show_all,
+            ..
+        } = widget
+        else {
+            continue;
+        };
+
+        let key =
+            crate::services::docker_updates::DockerUpdatesService::cache_key(containers, *show_all);
+        if seen.insert(key) {
+            out.push((containers.clone(), *show_all));
+        }
+    }
+
+    out
 }

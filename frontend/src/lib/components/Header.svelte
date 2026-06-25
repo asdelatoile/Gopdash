@@ -9,6 +9,7 @@
 	import { resolveLocale, t } from '$lib/locale';
 	import ThemeToggle from './ThemeToggle.svelte';
 	import LayoutLockToggle from './LayoutLockToggle.svelte';
+	import AppLogo from './AppLogo.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { onMount } from 'svelte';
 
@@ -37,8 +38,9 @@
 	{/if}
 	<div class="container mx-auto px-4 h-14 flex items-center justify-between">
 		<div class="flex items-center gap-3">
+			<AppLogo class="size-8 rounded-md" />
 			<h1 class="text-lg font-bold tracking-tight">
-				{appConfig.data?.title ?? 'Gopdash'}
+				{appConfig.data?.title ?? 'GopDash'}
 			</h1>
 			<div class="flex items-center gap-1.5 text-xs text-muted-foreground">
 				<ActivityIcon class="size-3 {liveData.sseConnected ? 'text-green-500' : ''}" />

@@ -16,6 +16,7 @@
 
 	let { widget }: Props = $props();
 	let updates = $state<ContainerUpdateInfo[]>([]);
+	let checkedAt = $state<string | null>(null);
 	let loading = $state(true);
 	let refreshing = $state(false);
 	let pruning = $state(false);
@@ -25,13 +26,15 @@
 
 	const locale = $derived(resolveLocale(appConfig.data));
 
-	async function loadUpdates(showSpinner = false) {
-		if (showSpinner) refreshing = true;
-		else loading = true;
+	async function loadUpdates(force = false) {
+		if (force) refreshing = true;
+		else if (checkedAt === null) loading = true;
 
 		try {
 			const filter = widget.containers?.join(',');
-			updates = await api.getDockerUpdates(filter, widget.show_all);
+			const result = await api.getDockerUpdates(filter, widget.show_all, force);
+			updates = result.updates;
+			checkedAt = result.checked_at;
 			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : t('docker_updates_error', locale);
@@ -99,6 +102,17 @@
 	function displayName(item: ContainerUpdateInfo): string {
 		return item.compose_service ?? item.name;
 	}
+
+	function formatCheckedAt(iso: string): string {
+		try {
+			return new Intl.DateTimeFormat(locale, {
+				dateStyle: 'short',
+				timeStyle: 'short'
+			}).format(new Date(iso));
+		} catch {
+			return iso;
+		}
+	}
 </script>
 
 <WidgetHeader {widget} title={widget.title ?? t('docker_updates_title', locale)} />
@@ -164,5 +178,10 @@
 				</div>
 			</div>
 		{/each}
+	{/if}
+	{#if checkedAt && !loading}
+		<p class="text-[10px] text-muted-foreground text-right pt-1">
+			{t('docker_updates_checked_at', locale).replace('{time}', formatCheckedAt(checkedAt))}
+		</p>
 	{/if}
 </CardContent>

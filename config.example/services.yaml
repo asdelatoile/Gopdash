@@ -7,6 +7,7 @@ weather:
 
 docker:
   socket_path: /var/run/docker.sock
+  refresh_hours: 4   # vérif. auto des mises à jour d'images (widget docker-updates)
 
 bookmarks:
   - id: infrastructure

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard';
+	import AppLogo from '$lib/components/AppLogo.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card/index.js';
 	import { login } from '$lib/auth.svelte';
@@ -32,10 +32,8 @@
 <div class="min-h-screen flex items-center justify-center px-4 bg-background">
 	<Card class="w-full max-w-sm">
 		<CardHeader class="text-center space-y-3">
-			<div class="mx-auto flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-				<LayoutDashboardIcon class="size-6" />
-			</div>
-			<CardTitle class="text-xl">Gopdash</CardTitle>
+			<AppLogo class="mx-auto size-16 rounded-xl" />
+			<CardTitle class="text-xl">GopDash</CardTitle>
 			<p class="text-sm text-muted-foreground">{t('login_subtitle', locale)}</p>
 		</CardHeader>
 		<CardContent>

@@ -43,7 +43,7 @@ async fn main() -> anyhow::Result<()> {
         .and_then(|p| p.parse().ok())
         .unwrap_or(8080);
 
-    tracing::info!("Starting Gopdash");
+    tracing::info!("Starting GopDash");
     tracing::info!("Config: {}", config_source.describe());
     tracing::info!("Static dir: {static_dir}");
 
@@ -51,6 +51,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Start background tasks
     state.docker.clone().spawn_stats_collector();
+    state.docker.clone().spawn_updates_checker(state.config.clone());
     let watch_target = state.config.source().watch_target();
     spawn_config_watcher(state.clone(), watch_target);
 

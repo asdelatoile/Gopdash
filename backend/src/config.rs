@@ -45,7 +45,7 @@ pub struct AppConfig {
 }
 
 fn default_title() -> String {
-    "Gopdash".into()
+    "GopDash".into()
 }
 
 fn default_refresh_interval() -> u64 {
@@ -576,18 +576,26 @@ fn default_rss_refresh() -> u64 {
 pub struct DockerConfig {
     #[serde(default = "default_docker_socket")]
     pub socket_path: String,
+    /// Intervalle entre deux vérifications des mises à jour d'images (widget docker-updates).
+    #[serde(default = "default_docker_refresh_hours")]
+    pub refresh_hours: u64,
 }
 
 impl Default for DockerConfig {
     fn default() -> Self {
         Self {
             socket_path: default_docker_socket(),
+            refresh_hours: default_docker_refresh_hours(),
         }
     }
 }
 
 fn default_docker_socket() -> String {
     "/var/run/docker.sock".into()
+}
+
+fn default_docker_refresh_hours() -> u64 {
+    4
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]

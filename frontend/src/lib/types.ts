@@ -144,6 +144,11 @@ export interface ContainerUpdateInfo {
 	error: string | null;
 }
 
+export interface DockerUpdatesResponse {
+	updates: ContainerUpdateInfo[];
+	checked_at: string;
+}
+
 export interface ImagePruneResult {
 	images_deleted: number;
 	space_reclaimed: number;

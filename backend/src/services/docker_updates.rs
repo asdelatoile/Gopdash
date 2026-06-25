@@ -38,33 +38,95 @@ pub struct ContainerUpdateInfo {
     pub error: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub struct DockerUpdatesResponse {
+    pub updates: Vec<ContainerUpdateInfo>,
+    pub checked_at: String,
+}
+
 struct CachedRemoteDigest {
     digest: Option<String>,
     fetched_at: Instant,
 }
 
+struct CachedUpdatesList {
+    response: DockerUpdatesResponse,
+    fetched_at: Instant,
+}
+
 pub struct DockerUpdatesService {
     client: Client,
-    cache: Arc<RwLock<HashMap<String, CachedRemoteDigest>>>,
+    digest_cache: Arc<RwLock<HashMap<String, CachedRemoteDigest>>>,
+    list_cache: Arc<RwLock<HashMap<String, CachedUpdatesList>>>,
 }
 
 impl DockerUpdatesService {
     pub fn new() -> Self {
         Self {
             client: Client::builder()
-                .user_agent("Gopdash/0.1 (docker-updates)")
+                .user_agent("GopDash/0.1 (docker-updates)")
                 .timeout(Duration::from_secs(15))
                 .build()
                 .unwrap_or_default(),
-            cache: Arc::new(RwLock::new(HashMap::new())),
+            digest_cache: Arc::new(RwLock::new(HashMap::new())),
+            list_cache: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
-    pub async fn list_updates(
+    pub fn cache_key(filter_names: &[String], show_all: bool) -> String {
+        let mut names = filter_names.to_vec();
+        names.sort();
+        format!("{}:{show_all}", names.join(","))
+    }
+
+    pub async fn get_updates(
         &self,
         docker: &Docker,
         filter_names: &[String],
         show_all: bool,
+        force: bool,
+        ttl_secs: u64,
+    ) -> AppResult<DockerUpdatesResponse> {
+        let key = Self::cache_key(filter_names, show_all);
+
+        if !force {
+            let cache = self.list_cache.read().await;
+            if let Some(cached) = cache.get(&key) {
+                if cached.fetched_at.elapsed().as_secs() < ttl_secs {
+                    return Ok(cached.response.clone());
+                }
+            }
+        }
+
+        let updates = self
+            .fetch_updates(docker, filter_names, show_all, ttl_secs)
+            .await?;
+        let response = DockerUpdatesResponse {
+            updates,
+            checked_at: chrono::Utc::now().to_rfc3339(),
+        };
+
+        self.list_cache.write().await.insert(
+            key,
+            CachedUpdatesList {
+                response: response.clone(),
+                fetched_at: Instant::now(),
+            },
+        );
+
+        Ok(response)
+    }
+
+    pub async fn invalidate_list_cache(&self) {
+        self.list_cache.write().await.clear();
+    }
+
+    async fn fetch_updates(
+        &self,
+        docker: &Docker,
+        filter_names: &[String],
+        show_all: bool,
+        digest_ttl_secs: u64,
     ) -> AppResult<Vec<ContainerUpdateInfo>> {
         let options = Some(ListContainersOptions::<String> {
             all: show_all,
@@ -79,7 +141,7 @@ impl DockerUpdatesService {
         let mut result = Vec::new();
         for summary in containers {
             let Some(info) = self
-                .inspect_update_info(docker, summary, filter_names, show_all)
+                .inspect_update_info(docker, summary, filter_names, show_all, digest_ttl_secs)
                 .await?
             else {
                 continue;
@@ -154,7 +216,8 @@ impl DockerUpdatesService {
                 .map_err(|e| AppError::Docker(e.to_string()))?;
         }
 
-        self.cache.write().await.remove(&image);
+        self.digest_cache.write().await.remove(&image);
+        self.invalidate_list_cache().await;
         Ok(())
     }
 
@@ -164,6 +227,7 @@ impl DockerUpdatesService {
         summary: ContainerSummary,
         filter_names: &[String],
         show_all: bool,
+        digest_ttl_secs: u64,
     ) -> AppResult<Option<ContainerUpdateInfo>> {
         let id = summary.id.unwrap_or_default();
         let name = summary
@@ -217,7 +281,7 @@ impl DockerUpdatesService {
         }
 
         let current_digest = local_digest(docker, &image).await;
-        let (remote_digest, error) = self.remote_digest(&image).await;
+        let (remote_digest, error) = self.remote_digest(&image, digest_ttl_secs).await;
         let status = match (&current_digest, &remote_digest) {
             (Some(local), Some(remote)) if local == remote => UpdateStatus::UpToDate,
             (Some(_), Some(_)) => UpdateStatus::Available,
@@ -238,13 +302,13 @@ impl DockerUpdatesService {
         }))
     }
 
-    async fn remote_digest(&self, image: &str) -> (Option<String>, Option<String>) {
+    async fn remote_digest(&self, image: &str, ttl_secs: u64) -> (Option<String>, Option<String>) {
         let Some(parsed) = parse_image_reference(image) else {
             return (None, Some("Unsupported image reference".into()));
         };
 
-        if let Some(cached) = self.cache.read().await.get(image) {
-            if cached.fetched_at.elapsed() < Duration::from_secs(300) {
+        if let Some(cached) = self.digest_cache.read().await.get(image) {
+            if cached.fetched_at.elapsed().as_secs() < ttl_secs {
                 return (cached.digest.clone(), None);
             }
         }
@@ -255,7 +319,7 @@ impl DockerUpdatesService {
             Err(e) => (None, Some(e)),
         };
 
-        self.cache.write().await.insert(
+        self.digest_cache.write().await.insert(
             image.to_string(),
             CachedRemoteDigest {
                 digest: digest.clone(),
@@ -389,7 +453,7 @@ async fn fetch_registry_token(client: &Client, parsed: &ParsedImage) -> Result<S
         );
         let response = client
             .get(url)
-            .header(USER_AGENT, "Gopdash/0.1")
+            .header(USER_AGENT, "GopDash/0.1")
             .send()
             .await
             .map_err(|e| e.to_string())?;
@@ -414,7 +478,15 @@ fn normalize_digest(digest: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::normalize_digest;
+    use super::{normalize_digest, DockerUpdatesService};
+
+    #[test]
+    fn cache_key_is_order_independent() {
+        assert_eq!(
+            DockerUpdatesService::cache_key(&["b".into(), "a".into()], true),
+            DockerUpdatesService::cache_key(&["a".into(), "b".into()], true),
+        );
+    }
 
     #[test]
     fn normalize_repo_digest() {

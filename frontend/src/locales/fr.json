@@ -36,6 +36,7 @@
 	"docker_updates_prune_confirm": "Supprimer toutes les images Docker non utilisées par un container ?",
 	"docker_updates_prune_done": "{count} image(s) supprimée(s), {size} libérés",
 	"docker_updates_update": "Mettre à jour",
+	"docker_updates_checked_at": "Vérifié le {time}",
 	"docker_updates_error": "Erreur Docker",
 	"docker_stack_title": "Stacks Docker",
 	"docker_stack_no_stacks": "Aucun stack configuré",

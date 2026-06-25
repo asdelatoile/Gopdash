@@ -1,10 +1,14 @@
-# Gopdash
+# GopDash
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+<p align="center">
+  <img src="frontend/static/app-icon.svg" alt="GopDash" width="160" />
+</p>
+
 Dashboard self-hosted ultra-léger. Un seul container Docker, drag & drop, resize de widgets, hot-reload de la configuration.
 
-![Aperçu du tableau de bord Gopdash](docs/dashboard-preview.png)
+![Aperçu du tableau de bord GopDash](docs/dashboard-preview.png)
 
 ![Autre exemple de dashboard](docs/dashboard-preview-2.png)
 
@@ -63,7 +67,7 @@ cp -r config.example config
 ## Structure
 
 ```
-Gopdash/
+GopDash/
 ├── backend/           # API Rust (Axum)
 │   └── src/
 │       ├── config.rs      # Parsing YAML + hot-reload
@@ -231,6 +235,8 @@ Widget dédié pour vérifier si une nouvelle image est disponible et la déploy
 
 Pastilles : orange = mise à jour dispo. Seuls les containers avec une mise à jour disponible sont listés (à jour ou statut inconnu = masqués).
 
+Les vérifications sont **mises en cache** côté serveur (défaut : toutes les **4 h**, réglable dans `services.yaml` → `docker.refresh_hours`). Le dashboard affiche le résultat en cache ; le bouton **Actualiser** force une nouvelle vérification (`?force=true`).
+
 Le widget propose aussi :
 - **Actualiser** — revérifier les mises à jour
 - **Prune** (icône poubelle) — supprime les images inutilisées (`docker image prune -a`), avec confirmation et résumé de l'espace libéré
@@ -289,7 +295,7 @@ Le backend proxy les appels Jellyfin (`/Sessions`, `/Items/Counts`) et les poste
 | `/api/docker/containers/{id}/start` | POST | Démarrer |
 | `/api/docker/containers/{id}/stop` | POST | Arrêter |
 | `/api/docker/containers/{id}/restart` | POST | Redémarrer |
-| `/api/docker/updates` | GET | Vérifier les mises à jour d'images |
+| `/api/docker/updates` | GET | Mises à jour d'images (`{ updates, checked_at }` ; `?force=true` pour forcer) |
 | `/api/docker/containers/{id}/update` | POST | Pull + recréer le container |
 | `/api/docker/images/prune` | POST | Supprimer les images inutilisées (`docker image prune -a`) |
 | `/api/system` | GET | Métriques système |
@@ -382,7 +388,7 @@ Le Dockerfile produit une image ~50-80 MB (Debian slim + binaire Rust strip + as
 
 À l'exécution, la consommation reste très faible (ex. ~6 Mo RAM, CPU quasi nul au repos) :
 
-![Consommation CPU / RAM du container Gopdash](docs/docker-metrics.png)
+![Consommation CPU / RAM du container GopDash](docs/docker-metrics.png)
 
 ## Développement
 

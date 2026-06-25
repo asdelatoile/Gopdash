@@ -34,7 +34,7 @@ pub struct RssService {
 impl RssService {
     pub fn new() -> Self {
         let client = Client::builder()
-            .user_agent("Mozilla/5.0 (compatible; Gopdash/0.1; RSS Reader)")
+            .user_agent("Mozilla/5.0 (compatible; GopDash/0.1; RSS Reader)")
             .timeout(Duration::from_secs(15))
             .build()
             .unwrap_or_default();
