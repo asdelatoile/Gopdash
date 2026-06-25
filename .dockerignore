@@ -1,0 +1,32 @@
+# Rust build artifacts (can be several GB)
+backend/target/
+**/*.rs.bk
+
+# Node — rebuilt inside the image
+node_modules/
+frontend/node_modules/
+frontend/build/
+frontend/.svelte-kit/
+
+# Local config (mounted at runtime via /data)
+config/
+config.yaml
+
+# Docs / assets not needed for the image
+docs/
+
+# Git / IDE / OS
+.git/
+.gitignore
+.dockerignore
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Env secrets
+.env
+.env.*
+
+# Logs
+*.log
