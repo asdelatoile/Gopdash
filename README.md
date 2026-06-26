@@ -103,6 +103,7 @@ GopDash/
 | `calendar` | Calendrier mensuel + horloge (locale / fuseau) | `type: calendar` + `show_today`, `show_outside_days`, `show_navigation` |
 | `search` | Recherche web multi-moteurs | `type: search` + `service_id`, `target` |
 | `jellyfin` | Now Playing + compteurs bibliothèque | `type: jellyfin` + config dans `services.yaml` |
+| `home-assistant` | Capteurs + interrupteurs (switch/light/input_boolean) | `type: home-assistant` + `switchs` / `sensors` |
 
 ### Liaison services.yaml ↔ dashboard.yaml
 
@@ -284,6 +285,39 @@ Widget dans `config/dashboard.yaml` :
 
 Le backend proxy les appels Jellyfin (`/Sessions`, `/Items/Counts`) et les posters. Rafraîchissement selon `refresh_interval` de `app.yaml`.
 
+### Widget Home Assistant
+
+Configuration serveur dans `config/services.yaml` (jeton longue durée : Profil → Sécurité → Jetons d'accès) :
+
+```yaml
+homeassistant:
+  url: https://ha.local:8123
+  access_token: "your-long-lived-token"
+  # insecure: true   # certificats auto-signés
+```
+
+Widget dans `config/dashboard.yaml` — chaque widget liste les entités à afficher :
+
+```yaml
+- type: home-assistant
+  id: ha-salon
+  title: Salon
+  icon: sh:home-assistant
+  switchs:
+    - label: Lumière salon      # optionnel — défaut = friendly_name HA
+      entity_id: switch.salon
+    - entity_id: light.cuisine  # switch, light, input_boolean…
+  sensors:
+    - label: Température
+      entity_id: sensor.salon_temperature
+    - entity_id: sensor.salon_humidity
+  sensor_columns: 2   # colonnes pour la grille des capteurs (défaut : 2)
+  switchs_columns: 1  # colonnes pour la grille des switchs (défaut : 1)
+  refresh_seconds: 30 # intervalle de rafraîchissement des états (défaut : refresh_interval de app.yaml)
+```
+
+Les capteurs sont affichés en lecture seule ; les interrupteurs sont actionnables (on/off). Le token HA reste côté serveur ; le frontend appelle `/api/homeassistant/state` et `/api/homeassistant/switch`. Rafraîchissement côté frontend et cache backend selon `refresh_seconds` du widget (minimum 1 s, défaut : `refresh_interval` de `app.yaml`).
+
 ## API REST
 
 | Endpoint | Méthode | Description |
@@ -303,6 +337,9 @@ Le backend proxy les appels Jellyfin (`/Sessions`, `/Items/Counts`) et les poste
 | `/api/bookmarks` | GET | Liens favoris |
 | `/api/bookmarks/health` | GET | Statut des liens avec `health_check` (`?service_id=media`) |
 | `/api/rss/{feed}` | GET | Articles RSS |
+| `/api/jellyfin/status` | GET | Statut Jellyfin (now playing, compteurs) |
+| `/api/homeassistant/state` | GET | États capteurs / interrupteurs (`?widget_id=`) |
+| `/api/homeassistant/switch` | POST | Allumer / éteindre une entité (`widget_id`, `entity_id`, `on`) |
 | `/api/events` | GET (SSE) | Mises à jour temps réel |
 
 ## Ajouter un nouveau widget

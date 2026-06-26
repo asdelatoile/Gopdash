@@ -11,6 +11,14 @@ codegen-units = 1
 panic = "abort"
 strip = true
 
+# Profil Docker / CI : compile beaucoup plus vite (surtout sur CPU faibles type N100).
+# L'image finale est ~quelques % plus grosse ; le runtime reste très léger.
+[profile.release-docker]
+inherits = "release"
+lto = false
+codegen-units = 16
+strip = true
+
 [dependencies]
 axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }

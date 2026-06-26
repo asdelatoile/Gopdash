@@ -1,6 +1,7 @@
 use crate::config::{ConfigManager, ConfigSource};
 use crate::services::docker::DockerService;
 use crate::services::health::HealthService;
+use crate::services::homeassistant::HomeAssistantService;
 use crate::services::jellyfin::JellyfinService;
 use crate::services::rss::RssService;
 use crate::services::session::SessionStore;
@@ -18,6 +19,7 @@ pub struct AppState {
     pub rss: Arc<RssService>,
     pub health: Arc<HealthService>,
     pub jellyfin: Arc<JellyfinService>,
+    pub homeassistant: Arc<HomeAssistantService>,
     pub sessions: Arc<SessionStore>,
     pub config_tx: broadcast::Sender<()>,
 }
@@ -33,6 +35,7 @@ impl AppState {
         let rss = Arc::new(RssService::new());
         let health = Arc::new(HealthService::new());
         let jellyfin = Arc::new(JellyfinService::new());
+        let homeassistant = Arc::new(HomeAssistantService::new());
         let sessions = Arc::new(SessionStore::new());
         let (config_tx, _) = broadcast::channel(16);
 
@@ -44,6 +47,7 @@ impl AppState {
             rss,
             health,
             jellyfin,
+            homeassistant,
             sessions,
             config_tx,
         })

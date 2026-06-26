@@ -114,6 +114,20 @@ export const api = {
 
 	jellyfinImageUrl: (itemId: string) => `${API_BASE}/jellyfin/images/${encodeURIComponent(itemId)}`,
 
+	getHomeAssistantState: (widgetId: string, force?: boolean) => {
+		const params = new URLSearchParams({ widget_id: widgetId });
+		if (force) params.set('force', 'true');
+		return request<import('./types').HomeAssistantWidgetState>(
+			`/homeassistant/state?${params.toString()}`
+		);
+	},
+
+	setHomeAssistantSwitch: (widgetId: string, entityId: string, on: boolean) =>
+		request<import('./types').HaSwitchState>('/homeassistant/switch', {
+			method: 'POST',
+			body: JSON.stringify({ widget_id: widgetId, entity_id: entityId, on })
+		}),
+
 	saveLayout: (widgets: import('./types').WidgetLayout[]) =>
 		request<import('./types').LayoutSaveResponse>('/config/layout', {
 			method: 'PUT',

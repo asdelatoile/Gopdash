@@ -61,5 +61,9 @@
 	"jellyfin_nothing_playing": "Rien en lecture",
 	"jellyfin_movies": "Films",
 	"jellyfin_series": "Séries",
-	"jellyfin_episodes": "Épisodes"
+	"jellyfin_episodes": "Épisodes",
+	"homeassistant_loading": "Chargement Home Assistant…",
+	"homeassistant_error": "Erreur Home Assistant",
+	"homeassistant_not_configured": "Home Assistant non configuré (services.yaml)",
+	"homeassistant_no_entities": "Aucune entité configurée (switchs / sensors)"
 }

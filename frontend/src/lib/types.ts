@@ -1,4 +1,4 @@
-export type WidgetType = 'docker' | 'docker-updates' | 'docker-stack' | 'system' | 'weather' | 'bookmarks' | 'rss' | 'calendar' | 'search' | 'jellyfin';
+export type WidgetType = 'docker' | 'docker-updates' | 'docker-stack' | 'system' | 'weather' | 'bookmarks' | 'rss' | 'calendar' | 'search' | 'jellyfin' | 'home-assistant';
 export type DockerGroupBy = 'flat' | 'compose';
 export type SearchTarget = 'new-tab' | 'same-tab';
 
@@ -68,7 +68,23 @@ export type WidgetConfig =
 			show_now_playing?: boolean;
 			show_library_counts?: boolean;
 			max_sessions?: number;
+	  })
+	| (BaseWidget & {
+			type: 'home-assistant';
+			switchs?: HomeAssistantEntityRef[];
+			sensors?: HomeAssistantEntityRef[];
+			/** Nombre de colonnes pour la grille des capteurs (défaut : 2) */
+			sensor_columns?: number;
+			/** Nombre de colonnes pour la grille des switchs (défaut : 1) */
+			switchs_columns?: number;
+			/** Intervalle de rafraîchissement des états en secondes (défaut : refresh_interval de app.yaml) */
+			refresh_seconds?: number;
 	  });
+
+export interface HomeAssistantEntityRef {
+	label?: string;
+	entity_id: string;
+}
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ThemePreset = 'default' | 'ocean' | 'forest' | 'rose';
@@ -95,6 +111,8 @@ export interface AppConfig {
 	rss_feeds: string[];
 	jellyfin_configured: boolean;
 	jellyfin_url: string | null;
+	homeassistant_configured: boolean;
+	homeassistant_url: string | null;
 	search_engines: SearchEngineConfig[];
 	theme: ThemeConfig;
 	persist_layout: boolean;
@@ -277,6 +295,25 @@ export interface JellyfinLibraryCounts {
 export interface JellyfinStatus {
 	now_playing: JellyfinNowPlayingSession[];
 	library_counts: JellyfinLibraryCounts | null;
+}
+
+export interface HaSwitchState {
+	entity_id: string;
+	label: string;
+	on: boolean;
+	available: boolean;
+}
+
+export interface HaSensorState {
+	entity_id: string;
+	label: string;
+	value: string;
+	unit: string | null;
+}
+
+export interface HomeAssistantWidgetState {
+	switchs: HaSwitchState[];
+	sensors: HaSensorState[];
 }
 
 export interface SSEUpdate {

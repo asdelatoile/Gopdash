@@ -1,5 +1,7 @@
 # Rust build artifacts (can be several GB)
 backend/target/
+target/
+**/target/
 **/*.rs.bk
 
 # Node — rebuilt inside the image

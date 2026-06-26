@@ -10,6 +10,7 @@
 	import CalendarWidget from './widgets/CalendarWidget.svelte';
 	import SearchWidget from './widgets/SearchWidget.svelte';
 	import JellyfinWidget from './widgets/JellyfinWidget.svelte';
+	import HomeAssistantWidget from './widgets/HomeAssistantWidget.svelte';
 
 	let { widget }: { widget: WidgetConfig } = $props();
 </script>
@@ -34,4 +35,6 @@
 	<SearchWidget {widget} />
 {:else if widget.type === 'jellyfin'}
 	<JellyfinWidget {widget} />
+{:else if widget.type === 'home-assistant'}
+	<HomeAssistantWidget {widget} />
 {/if}

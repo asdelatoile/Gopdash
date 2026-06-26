@@ -17,7 +17,8 @@ const DEFAULT_WIDGET_ICONS: Record<WidgetType, string> = {
 	rss: 'lucide:rss',
 	calendar: 'lucide:calendar',
 	search: 'lucide:search',
-	jellyfin: 'sh:jellyfin'
+	jellyfin: 'sh:jellyfin',
+	'home-assistant': 'sh:home-assistant'
 };
 
 export function defaultWidgetIcon(type: WidgetType): string {

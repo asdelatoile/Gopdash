@@ -38,6 +38,9 @@ pub struct AppConfig {
     pub jellyfin: Option<JellyfinConfig>,
 
     #[serde(default)]
+    pub homeassistant: Option<HomeAssistantConfig>,
+
+    #[serde(default)]
     pub theme: ThemeConfig,
 
     #[serde(default)]
@@ -260,6 +263,33 @@ pub enum WidgetConfig {
         #[serde(default = "default_max_sessions")]
         max_sessions: u32,
     },
+    #[serde(rename = "home-assistant")]
+    HomeAssistant {
+        id: String,
+        title: Option<String>,
+        icon: Option<String>,
+        #[serde(default)]
+        x: i32,
+        #[serde(default)]
+        y: i32,
+        #[serde(default = "default_w")]
+        w: i32,
+        #[serde(default = "default_h")]
+        h: i32,
+        #[serde(default = "default_show_header")]
+        show_header: bool,
+        #[serde(default, alias = "switches")]
+        switchs: Vec<HomeAssistantEntityRef>,
+        #[serde(default)]
+        sensors: Vec<HomeAssistantEntityRef>,
+        #[serde(default = "default_ha_sensor_columns")]
+        sensor_columns: u32,
+        #[serde(default = "default_ha_switchs_columns")]
+        switchs_columns: u32,
+        /// Intervalle de rafraîchissement des états (secondes). Défaut : `refresh_interval` de app.yaml
+        #[serde(default)]
+        refresh_seconds: Option<u64>,
+    },
 }
 
 fn default_w() -> i32 {
@@ -297,6 +327,14 @@ fn default_show_library_counts() -> bool {
 
 fn default_max_sessions() -> u32 {
     3
+}
+
+fn default_ha_sensor_columns() -> u32 {
+    2
+}
+
+fn default_ha_switchs_columns() -> u32 {
+    1
 }
 
 fn default_show_header() -> bool {
@@ -444,7 +482,8 @@ impl WidgetConfig {
             | Self::Rss { id, .. }
             | Self::Calendar { id, .. }
             | Self::Search { id, .. }
-            | Self::Jellyfin { id, .. } => id,
+            | Self::Jellyfin { id, .. }
+            | Self::HomeAssistant { id, .. } => id,
         }
     }
 
@@ -459,7 +498,8 @@ impl WidgetConfig {
             | Self::Rss { x: px, y: py, w: pw, h: ph, .. }
             | Self::Calendar { x: px, y: py, w: pw, h: ph, .. }
             | Self::Search { x: px, y: py, w: pw, h: ph, .. }
-            | Self::Jellyfin { x: px, y: py, w: pw, h: ph, .. } => {
+            | Self::Jellyfin { x: px, y: py, w: pw, h: ph, .. }
+            | Self::HomeAssistant { x: px, y: py, w: pw, h: ph, .. } => {
                 *px = x;
                 *py = y;
                 *pw = w;
@@ -479,9 +519,25 @@ impl WidgetConfig {
             | Self::Rss { x, y, w, h, .. }
             | Self::Calendar { x, y, w, h, .. }
             | Self::Search { x, y, w, h, .. }
-            | Self::Jellyfin { x, y, w, h, .. } => (*x, *y, *w, *h),
+            | Self::Jellyfin { x, y, w, h, .. }
+            | Self::HomeAssistant { x, y, w, h, .. } => (*x, *y, *w, *h),
         }
     }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct HomeAssistantEntityRef {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
+    pub entity_id: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct HomeAssistantConfig {
+    pub url: String,
+    pub access_token: String,
+    #[serde(default)]
+    pub insecure: bool,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -643,6 +699,8 @@ struct ServicesFile {
     search_engines: Vec<SearchEngineConfig>,
     #[serde(default)]
     jellyfin: Option<JellyfinConfig>,
+    #[serde(default)]
+    homeassistant: Option<HomeAssistantConfig>,
 }
 
 /// `config/layout.yaml` — positions Gridstack, écrit par le backend.
@@ -687,6 +745,7 @@ fn merge_files(
         docker: services.docker,
         search_engines: services.search_engines,
         jellyfin: services.jellyfin,
+        homeassistant: services.homeassistant,
         theme: app.theme,
         settings: app.settings,
     }

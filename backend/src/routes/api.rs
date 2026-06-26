@@ -34,6 +34,8 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/rss/{feed}", get(rss_feed))
         .route("/jellyfin/status", get(jellyfin_status))
         .route("/jellyfin/images/{item_id}", get(jellyfin_image))
+        .route("/homeassistant/state", get(homeassistant_state))
+        .route("/homeassistant/switch", post(homeassistant_switch))
 }
 
 async fn health() -> Json<serde_json::Value> {
@@ -58,6 +60,8 @@ struct PublicConfig {
     search_engines: Vec<SearchEngineConfig>,
     jellyfin_configured: bool,
     jellyfin_url: Option<String>,
+    homeassistant_configured: bool,
+    homeassistant_url: Option<String>,
     theme: PublicTheme,
     persist_layout: bool,
     locale: String,
@@ -98,6 +102,17 @@ impl From<&AppConfig> for PublicConfig {
             }),
             jellyfin_url: c.jellyfin.as_ref().and_then(|j| {
                 let url = j.url.trim();
+                if url.is_empty() {
+                    None
+                } else {
+                    Some(url.trim_end_matches('/').to_string())
+                }
+            }),
+            homeassistant_configured: c.homeassistant.as_ref().is_some_and(|h| {
+                !h.url.trim().is_empty() && !h.access_token.trim().is_empty()
+            }),
+            homeassistant_url: c.homeassistant.as_ref().and_then(|h| {
+                let url = h.url.trim();
                 if url.is_empty() {
                     None
                 } else {
@@ -455,4 +470,105 @@ async fn jellyfin_image(
         bytes,
     )
         .into_response())
+}
+
+#[derive(Deserialize)]
+struct HomeAssistantStateQuery {
+    widget_id: String,
+    #[serde(default)]
+    force: bool,
+}
+
+async fn homeassistant_state(
+    State(state): State<Arc<AppState>>,
+    Query(q): Query<HomeAssistantStateQuery>,
+) -> AppResult<Json<crate::services::homeassistant::HomeAssistantWidgetState>> {
+    let config = state.config.get().await;
+    let ha_cfg = config
+        .homeassistant
+        .as_ref()
+        .ok_or_else(|| AppError::BadRequest("Home Assistant not configured".into()))?;
+
+    let (switchs, sensors, refresh_secs) = find_homeassistant_widget(&config, &q.widget_id)?;
+
+    let cache_secs = refresh_secs.max(1);
+    let widget_state = state
+        .homeassistant
+        .get_widget_state(
+            ha_cfg,
+            &q.widget_id,
+            switchs,
+            sensors,
+            cache_secs,
+            q.force,
+        )
+        .await?;
+
+    Ok(Json(widget_state))
+}
+
+#[derive(Deserialize)]
+struct HomeAssistantSwitchBody {
+    widget_id: String,
+    entity_id: String,
+    on: bool,
+}
+
+async fn homeassistant_switch(
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<HomeAssistantSwitchBody>,
+) -> AppResult<Json<crate::services::homeassistant::HaSwitchState>> {
+    let config = state.config.get().await;
+    let ha_cfg = config
+        .homeassistant
+        .as_ref()
+        .ok_or_else(|| AppError::BadRequest("Home Assistant not configured".into()))?;
+
+    let (switchs, _, _) = find_homeassistant_widget(&config, &body.widget_id)?;
+    let item = switchs
+        .iter()
+        .find(|s| s.entity_id == body.entity_id)
+        .ok_or_else(|| {
+            AppError::BadRequest(format!(
+                "Entity not allowed for widget: {}",
+                body.entity_id
+            ))
+        })?;
+
+    let switch_state = state
+        .homeassistant
+        .set_switch(ha_cfg, &body.widget_id, item, body.on)
+        .await?;
+
+    Ok(Json(switch_state))
+}
+
+fn find_homeassistant_widget<'a>(
+    config: &'a AppConfig,
+    widget_id: &str,
+) -> AppResult<(
+    &'a [crate::config::HomeAssistantEntityRef],
+    &'a [crate::config::HomeAssistantEntityRef],
+    u64,
+)> {
+    let widget = config
+        .widgets
+        .iter()
+        .find(|w| w.id() == widget_id)
+        .ok_or_else(|| AppError::BadRequest(format!("Widget not found: {widget_id}")))?;
+
+    match widget {
+        WidgetConfig::HomeAssistant {
+            switchs,
+            sensors,
+            refresh_seconds,
+            ..
+        } => {
+            let refresh_secs = refresh_seconds.unwrap_or(config.refresh_interval);
+            Ok((switchs, sensors, refresh_secs))
+        }
+        _ => Err(AppError::BadRequest(format!(
+            "Widget is not home-assistant: {widget_id}"
+        ))),
+    }
 }

@@ -83,6 +83,24 @@ widgets:
     show_library_counts: true
     max_sessions: 3
 
+  - type: home-assistant
+    id: ha-salon
+    title: Salon
+    icon: sh:home-assistant
+    switchs:
+      - label: Lumière salon
+        entity_id: switch.salon
+      - label: Prise TV
+        entity_id: switch.prise_tv
+    sensors:
+      - label: Température
+        entity_id: sensor.salon_temperature
+      - label: Humidité
+        entity_id: sensor.salon_humidity
+    sensor_columns: 2   # défaut : 2
+    switchs_columns: 1  # défaut : 1
+    # refresh_seconds: 30   # optionnel — défaut = refresh_interval de app.yaml
+
   - type: bookmarks
     id: bookmarks-infra
     title: Infrastructure

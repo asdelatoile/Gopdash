@@ -1,6 +1,7 @@
 pub mod docker;
 pub mod docker_updates;
 pub mod health;
+pub mod homeassistant;
 pub mod jellyfin;
 pub mod rss;
 pub mod session;

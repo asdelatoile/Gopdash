@@ -61,6 +61,12 @@ jellyfin:
   api_key: "******"   # à renseigner
   # insecure: true   # certificats auto-signés
 
+# Home Assistant (token longue durée : Profil → Sécurité → Jetons d'accès)
+homeassistant:
+  url: https://ha.local:8123
+  access_token: "******"
+  # insecure: true   # certificats auto-signés
+
 search_engines:
   - id: google
     name: Google
