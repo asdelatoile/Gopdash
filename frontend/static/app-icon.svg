@@ -8,7 +8,7 @@
         <path d="M320,449C191.333,468.333 161,553 161,624C161,695 197.333,783.333 320,797" style="fill:none;stroke:url(#_Linear2);stroke-width:100px;"/>
     </g>
     <defs>
-        <linearGradient id="_Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(183,243,-243,183,342,516.294973)"><stop offset="0" style="stop-color:rgb(118,0,192);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(249,148,71);stop-opacity:1"/></linearGradient>
-        <linearGradient id="_Linear2" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(183,243,-243,183,342,516.294973)"><stop offset="0" style="stop-color:rgb(118,0,192);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(249,148,71);stop-opacity:1"/></linearGradient>
+        <linearGradient id="_Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(294,335,-335,294,342,516.294973)"><stop offset="0" style="stop-color:rgb(124,58,237);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(236,72,153);stop-opacity:1"/></linearGradient>
+        <linearGradient id="_Linear2" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(294,335,-335,294,342,516.294973)"><stop offset="0" style="stop-color:rgb(124,58,237);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(236,72,153);stop-opacity:1"/></linearGradient>
     </defs>
 </svg>
